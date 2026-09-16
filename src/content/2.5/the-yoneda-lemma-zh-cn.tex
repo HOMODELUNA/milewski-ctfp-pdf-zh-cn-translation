@@ -186,7 +186,8 @@ forall x . (a -> x) -> F x \ensuremath{\cong} F a
 
 拥有多种表示的好处在于: 一种可能比另一种更容易组合, 或者在某些应用里比另一种更高效.
 
-对这条原则最简单的例证, 就是编译器构造中常用的那种代码变换: 续体传递风格 (continuation passing style), 即 \acronym{CPS}.
+对这条原则最简单的例证, 就是编译器构造中常用的那种代码变换: 续体传递风格
+(continuation passing style), 即 \acronym{CPS}.
 它是把米田引理应用于恒等函子的最简单的情形. 把 \code{F} 换成恒等就得到:
 
 \begin{snipv}

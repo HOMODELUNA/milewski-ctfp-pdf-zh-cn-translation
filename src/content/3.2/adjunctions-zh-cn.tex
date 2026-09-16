@@ -1,0 +1,424 @@
+% !TEX root = ../../ctfp-print.tex
+
+\lettrine[lhang=0.17]{数}{学里我们有}各种方式来说一个东西像另一个东西. 最严格的是相等. 如果没有
+任何办法区分两样东西, 它们就相等; 在一切能想到的语境里, 一样都可以换成另一样. 比方说, 你有没有
+注意到,
+我们每次谈交换图式时都用到了态射的 \newterm{equality 相等}? 这是因为态射构成一个集合 (hom-集),
+而集合的元素之间可以比较相等.
+
+但相等往往要求得太强. 有很多例子, 两样东西就一切实际目的而言是相同的, 却并不真的相等. 比如说,
+配对类型 \code{(Bool, Char)} 并不严格等于 \code{(Char, Bool)}, 但我们明白它们包含的信息相同.
+这个概念最好的表达就是两个类型之间的 \newterm{isomorphism 同构} --- 一个可逆的态射. 既然它是
+态射, 它就保持结构; 而 ``iso'' (同构) 意味着它是一趟往返的一部分: 无论你从哪一边出发, 这趟往返都
+把你带回原处. 对配对来说, 这个同构就叫 \code{swap}:
+
+\src{snippet01}
+\code{swap} 恰好就是它自己的逆.
+
+\section{伴随与单位/余单位对}
+
+我们谈范畴同构时, 是用范畴之间的映射 --- 亦即函子 --- 来表达的. 我们希望能这样讲: 两个范畴
+$\cat{C}$ 和 $\cat{D}$ 同构, 当存在一个从 $\cat{C}$ 到 $\cat{D}$ 的可逆函子 $R$
+(``right'', 右). 换句话说, 存在另一个函子 $L$ (``left'', 左), 从 $\cat{D}$ 回到
+$\cat{C}$, 它与 $R$ 组合之后等于恒等函子 $I$. 可能的组合有两种, $R \circ L$ 和
+$L \circ R$; 可能的恒等函子也有两个: 一个在 $\cat{C}$ 里, 另一个在 $\cat{D}$ 里.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/adj-1.jpg}
+\end{figure}
+
+\noindent
+可这里有个棘手之处: 两个函子\emph{相等}到底是什么意思? 我们写下这个等式:
+\[R \circ L = I_{\cat{D}}\]
+或者这个等式:
+\[L \circ R = I_{\cat{C}}\]
+时, 说的是什么? 用物件的相等来定义函子的相等, 看上去合情合理: 两个函子作用在相等的物件上,
+应当产生相等的物件. 但在一般的范畴里, 我们压根没有物件相等这个概念 --- 它就不是定义的一部分.
+(再往 ``相等究竟是什么'' 这个兔子洞里深挖, 我们就该走进同伦类型论了.)
+
+你或许会争辩说, 函子\emph{就是}范畴的范畴里的态射, 所以它们应该可以比较相等. 确实, 只要我们谈的
+是小范畴 --- 物件构成一个集合 --- 就完全可以用集合元素的相等来比较物件.
+
+但要记得, $\Cat$ 其实是一个 $\cat{2}$-范畴. $\cat{2}$-范畴里的 hom-集带着额外的结构
+--- 在 $1$-态射之间还有 $2$-态射在作用. 在 $\Cat$ 里, $1$-态射是函子, $2$-态射是自然变换.
+所以谈函子的时候, 把自然同构当作相等的替代品要更自然 (这个双关实在躲不开!).
+
+因而, 与其谈范畴的同构, 不如考虑一个更宽泛的概念: \newterm{equivalence 等价}. 两个范畴
+$\cat{C}$ 和 $\cat{D}$ \emph{等价}, 如果我们能在它们之间找到来回跑的两个函子, 它们的组合
+(无论哪个方向) 都 \newterm{naturally isomorphic 自然同构} 于恒等函子. 换句话说, 组合
+$R \circ L$ 与恒等函子 $I_{\cat{D}}$ 之间存在一个双向的自然变换, $L \circ R$ 与恒等函子
+$I_{\cat{C}}$ 之间还存在另一个.
+
+伴随比等价还要弱, 因为它不要求两个函子的组合\emph{同构}于恒等函子. 它只是规定: 存在一个
+\newterm{one way 单向} 的自然变换, 从 $I_{\cat{D}}$ 到 $R \circ L$; 以及另一个从
+$L \circ R$ 到 $I_{\cat{C}}$. 这两个自然变换的签名是:
+\begin{gather*}
+  \eta \Colon I_{\cat{D}} \to R \circ L \\
+  \varepsilon \Colon L \circ R \to I_{\cat{C}}
+\end{gather*}
+$\eta$ 叫作伴随的单位 (unit), $\varepsilon$ 叫作余单位 (counit).
+
+注意这两个定义之间的不对称. 一般而言, 剩下的那两个映射我们并不拥有:
+\begin{gather*}
+  R \circ L \to I_{\cat{D}} \quad\quad\text{not necessarily} \\
+  I_{\cat{C}} \to L \circ R \quad\quad\text{not necessarily}
+\end{gather*}
+正是由于这个不对称, 函子 $L$ 叫作函子 $R$ 的 \newterm{left adjoint 左伴随}, 而函子
+$R$ 则是 $L$ 的右伴随. (当然, 只有当你按某种特定方式来画图, 左和右才有意义.)
+
+伴随的紧凑记号是:
+\[L \dashv R\]
+为了更好地理解伴随, 我们来更细致地分析单位和余单位.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/adj-unit.jpg}
+\end{figure}
+
+\noindent
+先从单位说起. 它是一个自然变换, 所以是一族态射. 给定 $\cat{D}$ 中一个物件 $d$, $\eta$
+的分量是 $I d$ (它等于 $d$) 与 $(R \circ L) d$ 之间的一个态射; 后者在图里被叫作 $d'$:
+\[\eta_d \Colon d \to (R \circ L) d\]
+注意, 组合 $R \circ L$ 是 $\cat{D}$ 上的一个自函子.
+
+这个等式告诉我们: 我们可以挑 $\cat{D}$ 中任意一个物件 $d$ 作起点, 用往返函子 $R \circ L$
+挑出目标物件 $d'$. 然后我们朝目标射出一支箭 --- 态射 $\eta_d$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/adj-counit.jpg}
+\end{figure}
+
+\noindent
+同理, 余单位 $\varepsilon$ 的分量可以描述为:
+\[\varepsilon_{c} \Colon (L \circ R) c \to c\]
+它告诉我们: 可以挑 $\cat{C}$ 中任意一个物件 $c$ 作目标, 用往返函子 $L \circ R$ 挑出源
+$c' = (L \circ R) c$. 然后我们把这支箭 --- 态射 $\varepsilon_{c}$ --- 从源射向目标.
+
+看待单位和余单位的另一种方式是: 单位让我们可以在任何本可以插入 $\cat{D}$ 上恒等函子的地方
+\emph{引入}组合 $R \circ L$; 余单位则让我们可以 \emph{消去} 组合 $L \circ R$, 把它换成
+$\cat{C}$ 上的恒等. 这就引出一些 ``显然'' 的一致性条件, 它们保证 ``引入'' 紧接着 ``消去'' 之后
+什么也没改变:
+\begin{gather*}
+  L = L \circ I_{\cat{D}} \to L \circ R \circ L \to I_{\cat{C}} \circ L = L \\
+  R = I_{\cat{D}} \circ R \to R \circ L \circ R \to R \circ I_{\cat{C}} = R
+\end{gather*}
+它们叫作三角恒等式, 因为它们让下面两个图式交换:
+
+\begin{figure}[H]
+  \centering
+
+  \begin{subfigure}
+    \centering
+    \begin{tikzcd}[column sep=large, row sep=large]
+      L \arrow[rd, equal] \arrow[r, "L \circ \eta"]
+      & L \circ R \circ L \arrow[d, "\epsilon \circ L"] \\
+      & L
+    \end{tikzcd}
+  \end{subfigure}%
+  \hspace{1cm}
+  \begin{subfigure}
+    \centering
+    \begin{tikzcd}[column sep=large, row sep=large]
+      R \arrow[rd, equal] \arrow[r, "\eta \circ R"]
+      & R \circ L \circ R \arrow[d, "R \circ \epsilon"] \\
+      & R
+    \end{tikzcd}
+  \end{subfigure}
+\end{figure}
+
+\noindent
+这些是函子范畴里的图式: 箭头是自然变换, 它们的组合是自然变换的水平组合. 写成分量的形式, 这些
+恒等式变成:
+\begin{gather*}
+  \varepsilon_{L d} \circ L \eta_d = \id_{L d} \\
+  R \varepsilon_{c} \circ \eta_{R c} = \id_{R c}
+\end{gather*}
+在 Haskell 里, 我们常以别的名字见到单位和余单位. 单位就是 \code{return} (在 \code{Applicative}
+的定义里叫 \code{pure}):
+
+\src{snippet02}
+而余单位就是 \code{extract}:
+
+\src{snippet03}
+这里 \code{m} 是对应于 $R \circ L$ 的 (自) 函子, \code{w} 是对应于 $L \circ R$ 的 (自) 函子.
+我们稍后会看到, 它们分别是单子与余单子定义的一部分.
+
+如果把自函子想成容器, 那么单位 (或 \code{return}) 就是一个多态函数, 它给任意类型的值套上一个
+默认的盒子. 余单位 (或 \code{extract}) 反着来: 它从容器里取回或产出单个值.
+
+我们稍后会看到, 每一对伴随函子都定义了一个单子和一个余单子. 反过来, 每个单子或余单子都可以
+因子化成一对伴随函子 --- 只是这种因子化并不唯一.
+
+在 Haskell 里, 我们大量使用单子, 却很少把它们因子化成伴随函子对, 这主要是因为那些函子通常会把
+我们带出 $\Hask$.
+
+不过我们确实可以在 Haskell 里定义 \newterm{endofunctors 自函子} 之间的伴随. 下面是取自
+\code{Data.Functor.Adjunction} 的定义的一部分:
+
+\src{snippet04}
+这个定义需要解释几句. 首先, 它描述的是一个多参数类型类 --- 两个参数是 \code{f} 和 \code{u}.
+它在两个类型构造子之间建立起一个叫 \code{Adjunction} 的关系.
+
+竖线之后的附加条件规定了函数依赖. 比如 \code{f -> u} 表示 \code{u} 由 \code{f} 决定
+(\code{f} 与 \code{u} 之间的关系是一个函数, 这里定义在类型构造子上). 反过来, \code{u -> f}
+表示如果我们知道了 \code{u}, 那么 \code{f} 就被唯一确定了.
+
+我马上就解释, 为什么在 Haskell 里我们可以要求右伴随 \code{u} 是一个 \newterm{representable
+可表的} 函子.
+
+\section{伴随与 hom-集}
+
+伴随还有一个等价的定义, 它用 hom-集之间的自然同构给出. 这个定义与我们一路学下来的普遍构造配合得
+很好. 每次你听到 ``存在某个唯一的态射, 它因子化了某个构造'' 这样的陈述, 你都该把它看成某个集合到
+某个 hom-集的映射. 这就是 ``挑出一个唯一态射'' 的意思.
+
+此外, 因子化往往可以用自然变换来描述. 因子化牵涉交换图式 --- 某个态射等于两个态射 (因子) 的组合.
+而自然变换把态射映成交换图式. 所以在普遍构造里, 我们从一个态射出发, 走到一个交换图式, 再走到一个
+唯一的态射. 我们最终得到的是态射到态射的映射, 或者说一个 hom-集到另一个 hom-集的映射 (通常在
+不同的范畴之间). 如果这个映射可逆, 而且能自然地扩展到所有 hom-集上, 我们就有了伴随.
+
+普遍构造与伴随的主要区别在于, 后者是全局定义的 --- 对所有 hom-集都成立. 举例来说, 用普遍构造
+你可以定义某两个选定物件的积, 即便那个范畴里其他任何一对物件都没有积. 我们很快就会看到, 如果某个
+范畴中\emph{任意一对}物件的积都存在, 它也就可以通过伴随来定义.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/adj-homsets.jpg}
+\end{figure}
+
+\noindent
+下面是用 hom-集给出的伴随替代定义. 和先前一样, 我们有两个函子 $L \Colon \cat{D} \to
+\cat{C}$ 和 $R \Colon \cat{C} \to \cat{D}$. 我们挑两个任意的物件: $\cat{D}$ 中的源
+物件 $d$, 和 $\cat{C}$ 中的目标物件 $c$. 我们可以用 $L$ 把源物件 $d$ 映到 $\cat{C}$.
+现在我们在 $\cat{C}$ 里有了两个物件, $L d$ 和 $c$. 它们确定了一个 hom-集:
+\[\cat{C}(L d, c)\]
+类似地, 我们可以用 $R$ 映射目标物件 $c$. 现在我们在 $\cat{D}$ 里有了两个物件, $d$ 和
+$R c$. 它们同样确定了一个 hom-集:
+\[\cat{D}(d, R c)\]
+我们说 $L$ 是 $R$ 的左伴随, 当且仅当存在一个 hom-集之间的同构:
+\[\cat{C}(L d, c) \cong \cat{D}(d, R c)\]
+它对 $d$ 和 $c$ 都是自然的. 自然性意味着源 $d$ 可以在整个 $\cat{D}$ 上平滑地变动, 目标
+$c$ 则可以在整个 $\cat{C}$ 上平滑地变动. 更确切地说, 有一个自然变换 $\varphi$, 处在如下
+两个从 $\cat{C}$ 到 $\Set$ 的 (协变) 函子之间. 下面是这两个函子对物件的作用:
+\begin{gather*}
+  c \to \cat{C}(L d, c) \\
+  c \to \cat{D}(d, R c)
+\end{gather*}
+另一个自然变换 $\psi$ 则在如下 (逆变) 函子之间作用:
+\begin{gather*}
+  d \to \cat{C}(L d, c) \\
+  d \to \cat{D}(d, R c)
+\end{gather*}
+这两个自然变换都必须可逆.
+
+证明这两个定义等价并不难. 比如说, 让我们从 hom-集的同构出发, 推出单位变换:
+\[\cat{C}(L d, c) \cong \cat{D}(d, R c)\]
+既然这个同构对任意物件 $c$ 都成立, 它对 $c = L d$ 也必然成立:
+\[\cat{C}(L d, L d) \cong \cat{D}(d, (R \circ L) d)\]
+我们知道左边至少含有一个态射, 就是恒等态射. 自然变换会把这个态射映成
+$\cat{D}(d, (R \circ L) d)$ 的一个元素, 或者说 --- 插入恒等函子 $I$ --- 映成下面这个
+hom-集里的态射:
+\[\cat{D}(I d, (R \circ L) d)\]
+我们得到一族以 $d$ 为参数的态射. 它们构成函子 $I$ 与函子 $R \circ L$ 之间的一个自然变换
+(自然性条件很容易验证). 这正是我们的单位 $\eta$.
+
+反过来, 从单位与余单位的存在出发, 我们可以定义 hom-集之间的变换. 比如说, 在 hom-集
+$\cat{C}(L d, c)$ 中任取一个态射 $f$. 我们想定义的 $\varphi$, 作用在 $f$ 上要产出
+$\cat{D}(d, R c)$ 中的一个态射.
+
+其实没什么选择余地. 一个可试的办法是用 $R$ 提升 $f$. 这会产出一个从 $R (L d)$ 到 $R c$
+的态射 $R f$ --- 它是 $\cat{D}((R \circ L) d, R c)$ 的一个元素.
+
+而 $\varphi$ 的分量需要的是一个从 $d$ 到 $R c$ 的态射. 这不难, 因为我们可以用 $\eta_d$
+这个分量从 $d$ 走到 $(R \circ L) d$. 于是得到:
+\[\varphi_f = R f \circ \eta_d\]
+另一个方向同理, $\psi$ 的推导也一样.
+
+回到 Haskell 里 \code{Adjunction} 的定义, 自然变换 $\varphi$ 和 $\psi$ 被分别换成了
+(对 \code{a} 和 \code{b} 多态的) 函数 \code{leftAdjunct} 与 \code{rightAdjunct}.
+函子 $L$ 和 $R$ 则叫作 \code{f} 和 \code{u}:
+
+\src{snippet05}
+\code{unit}/\code{counit} 这套表述与 \code{leftAdjunct}/\allowbreak\code{rightAdjunct}
+那套之间的等价, 由下面这组映射见证:
+
+\src{snippet06}
+跟着把伴随的范畴论描述一步步翻译成 Haskell 代码, 非常有启发. 我强烈建议把它当作一个练习.
+
+现在我们可以解释, 为什么在 Haskell 里右伴随自动就是一个
+\hyperref[representable-functors]{可表函子}. 理由是: 作为一级近似, 我们可以把 Haskell
+类型的范畴当作集合的范畴.
+
+当右边的范畴 $\cat{D}$ 是 $\Set$ 时, 右伴随 $R$ 是从 $\cat{C}$ 到 $\Set$ 的函子.
+这样的函子可表, 如果我们能在 $\cat{C}$ 中找到一个物件 $rep$, 使得 hom-函子
+$\cat{C}(rep, \_)$ 自然同构于 $R$. 事实是, 若 $R$ 是某个从 $\Set$ 到 $\cat{C}$ 的函子
+$L$ 的右伴随, 这样的物件总是存在 --- 它就是单例集合 $()$ 在 $L$ 之下的像:
+\[rep = L ()\]
+的确, 伴随告诉我们下面这两个 hom-集自然同构:
+\[\cat{C}(L (), c) \cong \Set((), R c)\]
+对给定的 $c$, 右边是从单例集合 $()$ 到 $R c$ 的函数的集合. 我们早先见过, 每个这样的函数
+从集合 $R\ c$ 里挑出一个元素. 这些函数构成的集合与集合 $R c$ 同构. 于是我们有:
+\[\cat{C}(L (), -) \cong R\]
+这就说明 $R$ 确实可表.
+
+\section{由伴随定义的积}
+
+我们先前用普遍构造引入了好几个概念. 其中许多概念一旦被全局地定义, 用伴随来表达反而更容易.
+最简单的非平凡例子就是积. \hyperref[products-and-coproducts]{积的普遍构造}的要点, 是能够把任何
+长得像积的候选者经由普遍积因子化.
+
+更确切地说, 两个物件 $a$ 和 $b$ 的积是物件 $(a\times{}b)$ (Haskell 记法里写作 \code{(a, b)}),
+配有态射 $fst$ 和 $snd$; 并且对任何别的候选者 $c$ --- 它配有 $p \Colon c \to a$ 和
+$q \Colon c \to b$ --- 都存在唯一的态射 $m \Colon c \to (a, b)$, 经由 $fst$ 和 $snd$
+因子化出 $p$ 和 $q$.
+
+早先我们看过, 在 Haskell 里可以实现一个 \code{factorizer} (因子化器), 从两个投影生成这个态射:
+
+\src{snippet07}
+验证因子化条件成立很容易:
+
+\src{snippet08}
+我们有这样一个映射: 它取一对态射 \code{p} 和 \code{q}, 产出另一个态射 \code{m = factorizer p q}.
+
+我们怎么把它翻译成定义伴随所需要的、两个 hom-集之间的映射? 诀窍是走出 $\Hask$, 把这一对态射
+当作积范畴里的单个态射.
+
+提醒一下什么是积范畴. 取两个任意的范畴 $\cat{C}$ 和 $\cat{D}$. 积范畴
+$\cat{C}\times{}\cat{D}$ 中的物件是物件的配对, 一个来自 $\cat{C}$, 一个来自 $\cat{D}$.
+态射是态射的配对, 一个来自 $\cat{C}$, 一个来自 $\cat{D}$.
+
+要在某个范畴 $\cat{C}$ 中定义积, 我们应当从积范畴 $\cat{C}\times{}\cat{C}$ 出发. 来自
+$\cat{C}$ 的态射配对, 是积范畴 $\cat{C}\times{}\cat{C}$ 中的单个态射.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/adj-productcat.jpg}
+\end{figure}
+
+\noindent
+用积范畴来定义积, 头一眼有点令人困惑. 但这是两种很不一样的积. 定义积范畴并不需要普遍构造,
+我们需要的只是物件配对与态射配对的概念.
+
+然而, $\cat{C}$ 中两个物件的配对\emph{不是} $\cat{C}$ 中的物件. 它是另一个范畴
+$\cat{C}\times{}\cat{C}$ 中的物件. 我们可以把这个配对正式地写成 $\langle a, b \rangle$,
+其中 $a$ 和 $b$ 是 $\cat{C}$ 的物件. 另一方面, 普遍构造之所以必要, 是为了定义物件
+$a\times{}b$ (Haskell 里的 \code{(a, b)}), 它是\emph{同一个}范畴 $\cat{C}$ 中的物件.
+这个物件应当以普遍构造所规定的方式代表配对 $\langle a, b \rangle$. 它未必总是存在; 即便对
+某些配对存在, 也可能对 $\cat{C}$ 中别的物件配对不存在.
+
+现在把 \code{factorizer} 看成 hom-集之间的映射. 第一个 hom-集在积范畴
+$\cat{C}\times{}\cat{C}$ 里, 第二个在 $\cat{C}$ 里. $\cat{C}\times{}\cat{C}$ 中一般的
+态射会是一对态射 $\langle f, g \rangle$:
+\begin{gather*}
+  f \Colon c' \to a \\
+  g \Colon c'' \to b
+\end{gather*}
+其中 $c''$ 可能与 $c'$ 不同. 但要定义积, 我们关心的是 $\cat{C}\times{}\cat{C}$ 中一个
+特殊的态射: 共享同一个源物件 $c$ 的那对 $p$ 和 $q$. 这没关系: 在伴随的定义里, 左边那个
+hom-集的源并不是任意物件 --- 它是左函子 $L$ 作用在右范畴某个物件上得到的结果. 符合条件的
+函子很容易猜到 --- 就是从 $\cat{C}$ 到 $\cat{C}\times{}\cat{C}$ 的对角函子 (diagonal
+functor) $\Delta$, 它对物件的作用是:
+\[\Delta\ c = \langle c, c \rangle\]
+于是我们伴随中左边的 hom-集应当是:
+\[(\cat{C}\times{}\cat{C})(\Delta\ c, \langle a, b \rangle)\]
+它是积范畴里的一个 hom-集. 它的元素是态射的配对, 也就是我们认得的、\code{factorizer}
+的那些参数:
+\[(c \to a) \to (c \to b) \ldots{}\]
+右边的 hom-集位于 $\cat{C}$ 中, 它走在源物件 $c$ 与某个函子 $R$ 作用在
+$\cat{C}\times{}\cat{C}$ 中目标物件的结果之间. 正是这个函子把配对 $\langle a, b \rangle$
+映到我们的积物件 $a\times{}b$. 我们认出这个 hom-集的元素就是 \code{factorizer} 的
+\emph{结果}:
+\[\ldots{} \to (c \to (a, b))\]
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/adj-product.jpg}
+\end{figure}
+
+\noindent
+我们还缺一个完整的伴随. 为此, 首先要求 \code{factorizer} 可逆 --- 我们要在 hom-集之间搭建
+一个\emph{同构}. \code{factorizer} 的逆应当从一个态射 $m$ 出发 --- 一个从某个物件 $c$
+到积物件 $a\times{}b$ 的态射. 换句话说, $m$ 应当是这个 hom-集的元素:
+\[\cat{C}(c, a\times{}b)\]
+逆因子化器应当把 $m$ 映成 $\cat{C}\times{}\cat{C}$ 中从 $\langle c, c \rangle$ 走到
+$\langle a, b \rangle$ 的态射 $\langle p, q \rangle$; 换句话说, 一个属于下面这个 hom-集
+的态射:
+\[(\cat{C}\times{}\cat{C})(\Delta\ c, \langle a, b \rangle)\]
+若这个映射存在, 我们就断定对角函子的右伴随存在. 这个函子定义了一个积.
+
+在 Haskell 里, 我们总能把 \code{m} 分别与 \code{fst} 和 \code{snd} 组合, 从而构造出
+\code{factorizer} 的逆.
+
+\begin{snip}{haskell}
+p = fst . m
+q = snd . m
+\end{snip}
+要完成这两种积定义之等价性的证明, 我们还得说明 hom-集之间的映射对 $a$、$b$ 和 $c$ 都是
+自然的. 这留给认真的读者作为练习.
+
+总结一下我们所做的: 范畴论的积可以在全局上定义为对角函子的 \newterm{right adjoint 右伴随}:
+\[(\cat{C}\times{}\cat{C})(\Delta\ c, \langle a, b \rangle) \cong \cat{C}(c, a\times{}b)\]
+这里 $a\times{}b$ 是我们的右伴随函子 $Product$ 作用在配对 $\langle a, b \rangle$ 上的结果.
+注意, 任何从 $\cat{C}\times{}\cat{C}$ 出发的函子都是双函子, 所以 $Product$ 是个双函子. 在
+Haskell 里, $Product$ 双函子就写作 \code{(,)}. 你可以把它应用于两个类型, 得到它们的积类型,
+例如:
+
+\src{snippet09}
+
+\section{由伴随定义的指数}
+
+指数 $b^a$, 亦即函数物件 $a \Rightarrow b$, 可以用一个
+\hyperref[function-types]{普遍构造}来定义. 这个构造如果对一切物件配对都存在, 就可以看成一次
+伴随. 同样, 诀窍在于盯住那句陈述:
+
+\begin{quote}
+  对任何其他的、带有态射 $g \Colon z\times{}a \to b$ 的物件 $z$
+  都存在唯一的态射 $h \Colon z \to (a \Rightarrow b)$
+\end{quote}
+这句陈述确立了一个 hom-集之间的映射.
+
+这里我们打交道的是同一个范畴里的物件, 所以两个伴随函子都是自函子. 左 (自) 函子 $L$ 作用在
+物件 $z$ 上时, 产出 $z\times{}a$. 它对应的就是与某个固定的 $a$ 取积.
+
+右 (自) 函子 $R$ 作用在 $b$ 上时, 产出函数物件 $a \Rightarrow b$ (即 $b^a$). 同样, $a$
+是固定的. 这两个函子之间的伴随常写作:
+\[-\times{}a \dashv (-)^a\]
+要看清支撑这个伴随的 hom-集映射, 最好的办法是把我们在普遍构造中用过的那个图式重画一遍.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/adj-expo.jpg}
+\end{figure}
+
+\noindent
+注意, $eval$ 态射\footnote{参见第 9 章关于 \hyperref[function-types]{普遍构造}的内容.}
+不是别的, 正是这个伴随的余单位:
+\[(a \Rightarrow b)\times{}a \to b\]
+其中:
+\[(a \Rightarrow b)\times{}a = (L \circ R) b\]
+我先前提过, 普遍构造定义的物件在同构意义上是唯一的. 这就是为什么我们讲 ``那个'' 积和
+``那个'' 指数. 这个性质对伴随同样成立: 一个函子若有伴随函子, 这个伴随函子在同构意义上唯一.
+
+\section{挑战}
+
+\begin{enumerate}
+  \tightlist
+  \item
+        推出 $\psi$ 的自然性方形, $\psi$ 是下面两个 (逆变) 函子之间的变换:
+        \begin{gather*}
+          a \to \cat{C}(L a, b) \\
+          a \to \cat{D}(a, R b)
+        \end{gather*}
+  \item
+        从伴随第二个定义中的 hom-集同构出发, 推出余单位 $\varepsilon$.
+  \item
+        补全这两个伴随定义之等价性的证明.
+  \item
+        证明余积可以由伴随来定义. 从余积的因子化器的定义出发.
+  \item
+        证明余积是对角函子的左伴随.
+  \item
+        在 Haskell 里定义积与函数物件之间的伴随.
+\end{enumerate}
