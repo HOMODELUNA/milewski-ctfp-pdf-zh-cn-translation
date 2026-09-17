@@ -4,7 +4,7 @@ An _unofficial_ PDF version of "**C**ategory **T**heory **F**or **P**rogrammers"
 by [Bartosz Milewski][bartosz github], converted from his [blogpost
 series][blogpost series] (_with permission!_).
 
-__非官方中文翻译__ 施工中
+**非官方中文翻译** 施工中
 
 ![Category Theory for Programmers][ctfp image]
 
@@ -34,7 +34,8 @@ build the edition you want (Haskell, Scala, OCaml, Reason and their printed
 versions). For example, to build the Scala edition you'll have to type
 `nix build .#ctfp-scala`.
 
-中文翻译: `nix --extra-experimental-features nix-command --extra-experimental-features flakes build .#ctfp-print-zh-cn`
+中文翻译:
+`nix --extra-experimental-features nix-command --extra-experimental-features flakes build .#ctfp-print-zh-cn`
 
 Upon successful compilation, the PDF file will be placed in the `result`
 directory.
@@ -76,7 +77,6 @@ License version 3][license gnu gpl].
 
 [download badge]:
   https://img.shields.io/badge/Download-latest-green.svg?style=flat-square
-[github actions link]: https://github.com/hmemcpy/milewski-ctfp-pdf/actions
 [github stars]:
   https://img.shields.io/github/stars/hmemcpy/milewski-ctfp-pdf.svg?style=flat-square
 [github workflow status]:
