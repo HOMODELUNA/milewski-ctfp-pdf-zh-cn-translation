@@ -1,0 +1,302 @@
+% !TEX root = ../../ctfp-print.tex
+
+\lettrine[lhang=0.17]{既}{然我们已经讲完了单子}, 现在就该收获对偶的好处了: 只要把箭头全部反转,
+到反范畴里去干活, 就能免费得到余单子.
+
+回想一下, 在最基本的层面上, 单子讲的是复合 Kleisli 箭头:
+
+\src{snippet01}
+其中 \code{m} 是一个身为单子的函子. 如果我们用字母 \code{w} (倒过来的 \code{m}) 表示余单子,
+就可以把余 Kleisli 箭头定义成这种类型的态射:
+
+\src{snippet02}
+余 Kleisli 箭头的鱼运算符对偶定义如下:
+
+\src{snippet03}
+要让余 Kleisli 箭头构成一个范畴, 我们还必须有一个恒等的余 Kleisli 箭头, 它叫
+\code{extract}:
+
+\src{snippet04}
+它是 \code{return} 的对偶. 此外还必须施加结合律, 以及左、右单位律. 把这一切合起来看, 我们
+本可以这样在 Haskell 里定义余单子:
+
+\src{snippet05}
+实践中我们会用略微不同的原语, 马上就会看到.
+
+那么问题是, 余单子对编程到底有什么用?
+
+\section{用余单子编程}
+
+把单子与余单子比较一下. 单子提供了一个用 \code{return} 把值放进容器的办法, 但它不让你访问
+里面存着的一个或几个值. 当然, 实现了单子的数据结构也许会提供访问内容的途径, 但那只能算附赠
+的好处. 从单子里抽取值并没有统一的接口. 我们还见过 \code{IO} 单子这样的例子, 它以从不暴露
+内容自居.
+
+另一方面, 余单子提供了从中抽取单个值的手段, 却不提供插入值的手段. 所以如果你要把余单子想成
+一个容器, 那它总是预先装好了内容, 并且允许你偷看一眼.
+
+正如 Kleisli 箭头接受一个值、产出一个装饰过的结果 --- 用上下文把它装饰一番 --- 余 Kleisli
+箭头接受的是一个值连同整整一份上下文, 产出的是结果. 它体现的正是 \newterm{contextual
+computation 上下文相关的计算}.
+
+\section{\texttt{Product} 余单子}
+
+还记得读者单子吗? 我们引入它是为了应付这样一个问题: 实现那些需要访问某个只读环境 \code{e}
+的计算. 这类计算可以表示成如下形式的纯函数:
+
+\src{snippet06}
+我们用柯里化把它们变成 Kleisli 箭头:
+
+\src{snippet07}
+但请注意, 这些函数本来就已经是余 Kleisli 箭头的形状了. 让我们把它们的参数收拾成更方便的
+函子形式:
+
+\src{snippet08}
+只要我们正在复合的那两个箭头都能拿到同一份环境, 复合运算符就很容易定义出来:
+
+\src{snippet09}
+\code{extract} 的实现干脆忽略环境:
+
+\src{snippet10}
+并不奇怪, \code{Product} 余单子能做的计算与读者单子一模一样. 从某个角度讲, 环境的余单子
+实现反而更自然 --- 它合乎 ``在上下文中计算'' 的精神. 而另一方面, 单子自带 \code{do} 记法
+这层方便的语法糖.
+
+读者单子与 \code{Product} 余单子之间的联系还要更深, 这与一个事实有关: 读者函子是积函子的
+右伴随. 不过总的来说, 余单子覆盖的计算观念与单子不同. 后面我们会看到更多例子.
+
+把 \code{Product} 余单子推广到任意积类型 (包括元组和记录) 也很容易.
+
+\section{解剖复合}
+
+沿着对偶化的过程继续走下去, 我们不妨把单子的 \code{bind} 和 \code{join} 也对偶掉. 或者,
+我们可以重演一遍当初对付单子的做法, 去研究鱼运算符的解剖. 后一条路似乎更有启发性.
+
+出发点是认识到: 复合运算符必须产出一个接受 \code{w a}、产出 \code{c} 的余 Kleisli 箭头.
+产出 \code{c} 的唯一办法, 是把第二个函数施加到类型为 \code{w b} 的参数上:
+
+\src{snippet11}
+可我们怎么才能造出一个类型为 \code{w b} 的值来喂给 \code{g} 呢? 我们手头的材料只有那个
+类型为 \code{w a} 的参数, 以及函数 \code{f :: w a -> b}. 解决办法是定义 \code{bind} 的
+对偶, 它叫 \code{extend}:
+
+\src{snippet12}
+有了 \code{extend} 就能实现复合:
+
+\src{snippet13}
+接下来能解剖 \code{extend} 吗? 你可能想说, 直接把 \code{w a -> b} 这个函数施加到参数
+\code{w a} 上不就行了, 可你马上就意识到, 自己没法把得到的 \code{b} 变成 \code{w b}.
+记住, 余单子并不提供提升值的手段. 在做单子的类似构造时, 这一步我们用的是 \code{fmap}.
+这里想用 \code{fmap}, 唯一的可能是我们手里有个 \code{w (w a)} 类型的东西. 要是能把
+\code{w a} 变成\\ \code{w (w a)} 就好了. 而恰好, 那正是 \code{join} 的对偶. 我们叫它
+\code{duplicate}:
+
+\src{snippet14}
+于是, 跟单子一样, 我们也有三个等价的余单子定义: 用余 Kleisli 箭头、用 \code{extend}、
+或者用 \code{duplicate}. 下面这份 Haskell 定义直接摘自\\ \code{Control.Comonad} 库:
+
+\src{snippet15}
+库里给出了 \code{extend} 基于 \code{duplicate} 的默认实现, 也给出了反过来的一套, 所以你
+只需重写其中一个.
+
+这些函数背后的直觉, 建立在这样一个想法上: 一般来说, 余单子可以被想成一个装满 \code{a}
+类型值的容器 (\code{Product} 余单子只是其中只装了一个值的那种特殊情况). 这里有 ``当前''
+值的概念, 它很容易通过 \code{extract} 拿到手. 余 Kleisli 箭头所做的计算聚焦于当前值, 但
+能访问周围所有的值. 想想康威的生命游戏: 每个格子都含有一个值 (通常只是 \code{True} 或
+\code{False}). 与生命游戏对应的余单子, 就是一个聚焦于 ``当前'' 格子的网格.
+
+那么 \code{duplicate} 干了什么? 它接受一个余单子容器 \code{w a}, 产出一个容器的容器
+\code{w (w a)}. 门道在于, 这些内层容器各自聚焦于 \code{w a} 里不同的 \code{a}. 在生命
+游戏里, 你会得到一个网格的网格, 外层网格的每个格子都装着一个聚焦于不同格子的内层网格.
+
+再看 \code{extend}. 它接受一个余 Kleisli 箭头和一个装满 \code{a} 的余单子容器
+\code{w a}, 把这个计算施加到所有 \code{a} 上、把它们换成 \code{b}, 结果是一个装满
+\code{b} 的余单子容器. \code{extend} 的做法是把焦点从一个 \code{a} 挪到另一个, 依次把
+余 Kleisli 箭头施加到它们身上. 在生命游戏里, 余 Kleisli 箭头算的是当前格子的新状态; 为此
+它要打量自己的上下文 --- 大概也就是它的近邻. \code{extend} 的默认实现正好演示了这个过程:
+先调用 \code{duplicate} 造出所有可能的焦点, 再把 \code{f} 施加到每个焦点上.
+
+\section{\texttt{Stream} 余单子}
+
+把焦点从容器的一个元素挪到另一个元素, 这个过程最好拿无穷流来演示. 这样的流跟列表一模一样,
+只是它没有空的构造器:
+
+\src{snippet16}
+它平凡地就是一个 \code{Functor}:
+
+\src{snippet17}
+流的焦点是它的第一个元素, 所以 \code{extract} 的实现是这样的:
+
+\src{snippet18}
+\code{duplicate} 产出一个流的流, 每一个都聚焦于不同的元素.
+
+\src{snippet19}
+第一个元素是原来的流, 第二个元素是原来流的尾部, 第三个元素是那个尾部的尾部, 如此无穷无尽.
+
+这是完整的实例:
+
+\src{snippet20}
+这是一种非常函数式的看待流的方式. 在命令式语言里, 我们大概会先写一个 \code{advance} 方法,
+把流平移一个位置. 而在这里, \code{duplicate} 一次性就产出了所有平移过的流. Haskell 的
+惰性让这件事不仅可能, 甚至可取. 当然, 真要让 \code{Stream} 实用, 我们还会去实现
+\code{advance} 的对应物:
+
+\src{snippet21}
+但它从来不是余单子接口的一部分.
+
+如果你做过数字信号处理, 就会一眼看出: 流的余 Kleisli 箭头就是一个数字滤波器, 而
+\code{extend} 产出的是被过滤过的流.
+
+举个简单的例子, 我们来实现滑动平均滤波器. 先是一个把流的 \code{n} 个元素加起来的函数:
+
+\src{snippet22}
+下面是计算流的前 \code{n} 个元素的平均值的函数:
+
+\src{snippet23}
+部分应用过的 \code{average n} 就是一个余 Kleisli 箭头, 所以我们可以把它 \code{extend}
+到整个流上:
+
+\src{snippet24}
+结果就是一个滑动平均的流.
+
+流是单向的、一维的余单子的一个例子. 很容易把它做成双向的, 或者推广到二维乃至更多维.
+
+\section{范畴论视角下的余单子}
+
+在范畴论里定义余单子, 是一道直截了当的对偶练习. 和单子一样, 我们从自函子 \code{T} 出发.
+定义单子的那两个自然变换 $\eta$ 和 $\mu$, 对余单子来说只要简单地反过来:
+\begin{align*}
+  \varepsilon & \Colon T \to I   \\
+  \delta      & \Colon T \to T^2
+\end{align*}
+这两个变换的分量分别对应 \code{extract} 和 \code{duplicate}. 余单子律就是单子律的镜像.
+这里没什么大惊小怪的.
+
+再说说从伴随导出单子. 对偶会把伴随反转: 左伴随变成右伴随, 反之亦然. 既然复合
+$R \circ L$ 定义了一个单子, $L \circ R$ 就一定定义了一个余单子. 伴随的余单位:
+\[\varepsilon \Colon L \circ R \to I\]
+恰恰就是我们在余单子定义里见到的那个 $\varepsilon$ --- 或者说, 写到分量上, 就是 Haskell
+的 \code{extract}. 我们也可以利用伴随的单位:
+\[\eta \Colon I \to R \circ L\]
+在 $L \circ R$ 中间插入一个 $R \circ L$, 从而产出 $L \circ R \circ L \circ R$.
+从 $T$ 造出 $T^2$ 就定义了 $\delta$, 余单子的定义到此完备.
+
+我们还见过单子是一个幺半群. 这句话的对偶要用到余幺半群, 那么余幺半群是什么? 幺半群最初
+那个 ``单物件范畴'' 的定义对偶化出来没什么意思: 把所有自态射的方向反转, 你得到的还是另一个
+幺半群. 但请记住, 在我们构造单子的那套路子里, 用的是幺半群更一般的定义, 即幺半范畴中的一
+个物件. 那个构造基于两个态射:
+\begin{align*}
+  \mu  & \Colon m \otimes m \to m \\
+  \eta & \Colon i \to m
+\end{align*}
+把这两个态射反过来, 就得到了幺半范畴里的一个余幺半群:
+\begin{align*}
+  \delta      & \Colon m \to m \otimes m \\
+  \varepsilon & \Colon m \to i
+\end{align*}
+我们尽可以在 Haskell 里写出余幺半群的定义:
+
+\src{snippet25}
+但它相当平凡. 显然 \code{destroy} 忽略了它的参数.
+
+\src{snippet26}
+\code{split} 不过是一对函数:
+
+\src{snippet27}
+现在考虑与幺半群单位律对偶的余幺半群律.
+
+\src{snippet28}
+这里 \code{lambda} 和 \code{rho} 分别是左单位子和右单位子 (见
+\hyperref[monads-categorically]{幺半范畴}的定义). 把定义代入, 我们得到:
+
+\src{snippet29}
+这就证明了 \code{g = id}. 类似地, 第二条律展开后得到 \code{f = id}. 总而言之:
+
+\src{snippet30}
+这说明在 Haskell 里 (以及一般地在范畴 $\Set$ 里), 每个物件都是一个平凡的余幺半群.
+
+幸运的是, 还有别的更有意思的幺半范畴可供我们定义余幺半群. 其中之一就是自函子范畴. 结果
+发现, 正如单子是自函子范畴里的一个幺半群,
+
+\begin{quote}
+  余单子不过是自函子范畴里的一个余幺半群.
+\end{quote}
+
+\section{\texttt{Store} 余单子}
+
+余单子的另一个重要例子是状态单子的对偶. 它叫作余状态 (costate) 余单子, 或者也可以叫
+\code{Store} 余单子.
+
+我们先前见过, 状态单子是由定义指数的那个伴随生成的:
+\begin{align*}
+  L\ z & = z\times{}s      \\
+  R\ a & = s \Rightarrow a
+\end{align*}
+我们要用同一个伴随来定义余状态余单子. 余单子由复合 $L \circ R$ 定义:
+\[L\ (R\ a) = (s \Rightarrow a)\times{}s\]
+把它翻译成 Haskell, 起点是左边的 \code{Product} 函子与右边的 \code{Reader} 函子之间的伴随.
+把 \code{Product} 复合在 \code{Reader} 之后, 等价于下面这个定义:
+
+\src{snippet31}
+伴随的余单位取在物件 $a$ 上, 得到的态射是:
+\[\varepsilon_a \Colon ((s \Rightarrow a)\times{}s) \to a\]
+或者写成 Haskell 记法:
+
+\src{snippet32}
+这就是我们的 \code{extract}:
+
+\src{snippet33}
+伴随的单位:
+
+\src{snippet34}
+可以改写成一个部分应用的数据构造器:
+
+\src{snippet35}
+我们用水平组合构造 $\delta$, 也就是 \code{duplicate}:
+\begin{align*}
+  \delta & \Colon L \circ R \to L \circ R \circ L \circ R \\
+  \delta & = L \circ \eta \circ R
+\end{align*}
+得把 $\eta$ 偷偷塞进最左边的那个 $L$, 而它是 \code{Product} 函子. 也就是说, 让 $\eta$
+(或者说 \code{Store f}) 作用在这个对的左分量上 (\code{Product} 的 \code{fmap} 干的正是
+这件事). 于是我们得到:
+
+\src{snippet36}
+(记住, 在 $\delta$ 的公式里, $L$ 和 $R$ 代表的是恒等自然变换, 它们的分量都是恒等态射.)
+
+下面是 \code{Store} 余单子的完整定义:
+
+\src{snippet37}
+你大可以把 \code{Store} 的 \code{Reader} 那一半看成一个广义的容器, 里面装着 \code{a},
+用 \code{s} 类型的元素当键. 举例说, 若 \code{s} 是 \code{Int}, 那 \code{Reader Int a}
+就是一个由 \code{a} 组成的无穷双向流. \code{Store} 把这个容器与一个键类型的值配成一对.
+比如 \code{Reader Int a} 就配上一个 \code{Int}. 这时候 \code{extract} 会用这个整数去索引
+那个无穷流. 你可以把 \code{Store} 的第二个分量看成当前位置.
+
+顺着这个例子, \code{duplicate} 造出一个新的、以 \code{Int} 为下标的无穷流. 这个流以流为
+元素. 特别地, 在当前位置上它装的就是原来那个流. 但如果你换别的 \code{Int} (正的负的都行)
+当键, 你得到的就是定位在新下标上的、平移过的流.
+
+一般地, 你可以自己验证: 当 \code{extract} 作用在被 \code{duplicate} 过的 \code{Store}
+上时, 它产出的是原来的 \code{Store} (实际上, 余单子的单位律说的就是
+\code{extract . duplicate = id}).
+
+\code{Store} 余单子的地位很重要, 它是 \code{Lens} 库的理论基础. 从概念上讲,
+\code{Store s a} 余单子封装了 ``聚焦'' (像透镜那样) 于数据类型 \code{a} 的某个子结构的想法,
+用的索引是类型 \code{s}. 特别地, 一个形如
+
+\src{snippet38}
+的函数, 等价于一对函数:
+
+\src{snippet39}
+如果 \code{a} 是积类型, 那 \code{set} 可以实现成: 设置 \code{a} 内部那个 \code{s} 类型的
+字段, 同时返回 \code{a} 的修改版. 类似地, \code{get} 可以实现成从 \code{a} 里读出
+\code{s} 字段的值. 下一节我们会进一步探讨这些想法.
+
+\section{挑战}
+
+\begin{enumerate}
+  \tightlist
+  \item
+        用 \code{Store} 余单子实现康威的生命游戏. 提示: 你会给 \code{s} 挑什么类型?
+\end{enumerate}

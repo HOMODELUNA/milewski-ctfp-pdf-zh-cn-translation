@@ -1,0 +1,371 @@
+% !TEX root = ../../ctfp-print.tex
+
+\lettrine[lhang=0.17]{把}{自函子解读成}定义表达式的方式, 那么代数让我们对它
+们求值, 单子让我们形成并操纵它们. 把代数与单子结合起来, 我们不仅得到了大量
+功能, 也答得上几个有意思的问题.
+
+其中一个问题关乎单子与伴随之间的关系. 我们见过, 每一对伴随都
+\hyperref[monads-categorically]{定义了一个单子} (和一个余单子). 问题是:
+每个单子 (每个余单子) 都能从某个伴随导出吗? 答案是肯定的. 有一整族伴随都能
+生成给定的单子. 我给你看其中两个.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.25\textwidth]{images/pigalg.png}
+\end{figure}
+
+\noindent
+我们来把定义温习一遍. 单子是一个装备了两个自然变换的自函子 $m$, 且这两个
+变换满足某些相容性条件. 这两个变换在 $a$ 处的分量是:
+\begin{align*}
+  \eta_a & \Colon a \to m\ a         \\
+  \mu_a  & \Colon m\ (m\ a) \to m\ a
+\end{align*}
+同一个自函子的代数, 则是挑定一个特别的物件 —— 载体 $a$ —— 再加上一个态射
+\[alg \Colon m\ a \to a\]
+首先要注意的是, 代数的方向与 $\eta_a$ 相反. 直觉是, $\eta_a$ 从一个 $a$
+类型的值创建一个平凡的表达式. 让代数与单子相容的第一个条件保证: 用载体为
+$a$ 的代数来求值这个表达式, 我们会拿回原来的值:
+\[alg \circ \eta_a = \id_a\]
+第二个条件源自这样一件事: 求值双重嵌套的表达式 $m\ (m\ a)$ 有两条路. 我们
+可以先施加 $\mu_a$ 把表达式压平, 再用代数的求值器; 也可以施加提升过的求值
+器先把内层的表达式算出来, 再对结果施加求值器. 我们希望这两种策略等价:
+\[alg \circ \mu_a = alg \circ m\ alg\]
+这里 \code{m alg} 是用函子 $m$ 提升 $alg$ 得到的那个态射. 下面两张交换图
+描述了这两个条件 (我提前把 $m$ 换成了 $T$, 为后文做准备):
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}
+    \centering
+    \begin{tikzcd}[column sep=large, row sep=large]
+      a \arrow[rd, equal] \arrow[r, "\eta_a"]
+      & Ta \arrow[d, "alg"] \\
+      & a
+    \end{tikzcd}
+  \end{subfigure}
+  \hspace{1cm}
+  \begin{subfigure}
+    \centering
+    \begin{tikzcd}[column sep=large, row sep=large]
+      T(Ta) \arrow[r, "T\ alg"] \arrow[d, "\mu_a"]
+      & Ta \arrow[d, "alg"] \\
+      Ta \arrow[r, "alg"]
+      & a
+    \end{tikzcd}
+  \end{subfigure}
+\end{figure}
+
+\noindent
+我们也能用 Haskell 把这些条件写出来:
+
+\src{snippet01}
+来看一个小例子. 列表自函子的一个代数由某个类型 \code{a} 和一个从 \code{a}
+的列表产出 \code{a} 的函数构成. 只要把元素类型和累加器类型都取成 \code{a},
+我们就能用 \code{foldr} 来表达这个函数:
+
+\src{snippet02}
+这个具体的代数由一个两参数的函数 (就叫它 \code{f}) 和一个值 \code{z} 指定.
+列表函子恰好也是个单子, 它的 \code{return} 把一个值变成单元素列表. 求值器
+(这里是 \code{foldr f z}) 与 \code{return} 的复合把 \code{x} 送到:
+
+\src{snippet03}
+其中 \code{f} 的动作写成了中缀记法. 如果对每个 \code{x} 都满足下面这个相容
+性条件, 代数就与单子相容:
+
+\src{snippet04}
+如果我们把 \code{f} 看成一个二元运算符, 这个条件告诉我们的就是 \code{z} 是
+右单位元.
+
+第二个相容性条件作用在列表的列表上. \code{join} 的动作是把各个列表串接起来,
+然后我们可以折叠所得的列表. 另一方面, 我们可以先折叠各个列表, 再折叠所得的
+列表. 同样地, 把 \code{f} 理解成二元运算符的话, 这个条件告诉我们这个二元
+运算是结合的. 当 \code{(a, f, z)} 是一个幺半群时, 这些条件自然满足.
+
+\section{T-代数}
+
+数学家喜欢把自己的单子叫作 $T$, 所以他们把与它相容的代数叫作 T-代数. 范畴
+$\cat{C}$ 里, 给定单子 $T$ 之上的 T-代数构成一个范畴, 叫作 Eilenberg-Moore
+范畴, 通常记作 $\cat{C}^T$. 那个范畴里的态射是代数的同态. 它们与我们在
+F-代数那里见过的同态是同一个东西.
+
+一个 T-代数是一个对, 由一个载体物件和一个求值器组成, $(a, f)$. 有一个显而
+易见的遗忘函子 $U^T$, 它从 $\cat{C}^T$ 走向 $\cat{C}$, 把 $(a, f)$ 映到
+$a$. 它同样把一个 T-代数的同态映到 $\cat{C}$ 里两个载体物件之间对应的态射.
+你还记得我们讨论伴随时的说法: 遗忘函子的左伴随叫作自由函子.
+
+$U^T$ 的左伴随叫作 $F^T$. 它把 $\cat{C}$ 里的物件 $a$ 映到
+$\cat{C}^T$ 里的一个自由代数. 这个自由代数的载体是 $T\ a$. 它的求值器是从
+$T\ (T\ a)$ 回到 $T\ a$ 的态射. 既然 $T$ 是一个单子, 我们尽可以拿单子的
+$\mu_a$ (Haskell 里的 \code{join}) 来当求值器.
+
+我们还得证明这确实是一个 T-代数. 为此必须满足两个相容性条件:
+\begin{align*}
+  alg & \circ \eta_{Ta} = \id_{Ta}     \\
+  alg & \circ \mu_a = alg \circ T\ alg
+\end{align*}
+可要是你把 $\mu$ 代入代数, 这些恰恰就是单子律.
+
+你可能还记得, 每个伴随都定义了一个单子. 结果发现, $F^T$ 与 $U^T$ 之间的这个
+伴随, 定义的正是在 Eilenberg-Moore 范畴的构造中用到的那个单子 $T$. 由于我们
+可以对每个单子做这个构造, 我们就能断定: 每个单子都能从一个伴随导出. 稍后我
+会给你看, 还有另一个伴随也能生成同一个单子.
+
+计划是这样的: 我先证明 $F^T$ 确实是 $U^T$ 的左伴随. 办法是定义这个伴随的单位
+与余单位, 并证明相应的三角恒等式得到满足. 然后我证明这个伴随生成的单子确实
+就是我们最初那个单子.
+
+伴随的单位是这个自然变换:
+\[\eta \Colon I \to U^T \circ F^T\]
+我们来算一算它在 $a$ 处的分量. 恒等函子交给我们 $a$. 自由函子产出自由代数
+$(T\ a, \mu_a)$, 遗忘函子又把它缩减成 $T\ a$. 这一来我们便得到一个从 $a$ 到
+$T\ a$ 的映射. 我们索性用单子 $T$ 的单位来当这个伴随的单位.
+
+我们再看看余单位:
+\[\varepsilon \Colon F^T \circ U^T \to I\]
+我们来算它在某个 T-代数 $(a, f)$ 处的分量. 遗忘函子把 $f$ 忘掉了, 自由函子
+则产出对 $(T\ a, \mu_a)$. 所以要定义余单位 $\varepsilon$ 在 $(a, f)$ 处的
+分量, 我们需要 Eilenberg-Moore 范畴里一个合适的态射, 或者说一个 T-代数的
+同态:
+\[(T\ a, \mu_a) \to (a, f)\]
+这样一个同态应该把载体 $T\ a$ 映到 $a$. 我们就把被遗忘的那个求值器 $f$ 请回
+来吧. 这一回我们把它当作 T-代数的同态来用. 事实上, 让 $f$ 成为一个 T-代数的
+那张交换图, 可以重新解读成它是一个 T-代数之间的同态:
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzcd}[column sep=large, row sep=large]
+    T(Ta) \arrow[r, "T f"] \arrow[d, "\mu_a"]
+    & Ta \arrow[d, "f"] \\
+    Ta \arrow[r, "f"]
+    & a
+  \end{tikzcd}
+\end{figure}
+
+\noindent
+就这样, 我们把余单位自然变换 $\varepsilon$ 在 $(a, f)$ (T-代数范畴里的一个
+物件) 处的分量定义成了 $f$.
+
+要把伴随补齐, 我们还得证明单位与余单位满足三角恒等式. 它们是:
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}
+    \centering
+    \begin{tikzcd}[column sep=large, row sep=large]
+      Ta \arrow[rd, equal] \arrow[r, "T \eta_a"]
+      & T(Ta) \arrow[d, "\mu_a"] \\
+      & Ta
+    \end{tikzcd}
+  \end{subfigure}%
+  \hspace{1cm}
+  \begin{subfigure}
+    \centering
+    \begin{tikzcd}[column sep=large, row sep=large]
+      a \arrow[rd, equal] \arrow[r, "\eta_a"]
+      & Ta \arrow[d, "f"] \\
+      & a
+    \end{tikzcd}
+  \end{subfigure}
+\end{figure}
+
+\noindent
+第一个之所以成立, 是因为单子 $T$ 的单位律. 第二个就是 T-代数 $(a, f)$ 的那
+条律.
+
+我们已经确认这两个函子构成一个伴随:
+\[F^T \dashv U^T\]
+每个伴随都会产生一个单子. 这一趟往返
+\[U^T \circ F^T\]
+是 $\cat{C}$ 上那个催生相应单子的自函子. 我们来看看它在物件 $a$ 上的作用.
+$F^T$ 造出的自由代数是 $(T\ a, \mu_a)$, 而遗忘函子 $U^T$ 把求值器丢掉了.
+所以的确有:
+\[U^T \circ F^T = T\]
+不出所料, 伴随的单位就是单子 $T$ 的单位.
+
+你可能记得, 伴随的余单位通过下面这个公式产生单子的乘法:
+\[\mu = R \circ \varepsilon \circ L\]
+这是三个自然变换的水平组合, 其中两个是恒等自然变换, 分别把 $L$ 映到 $L$、
+把 $R$ 映到 $R$. 中间那个, 也就是余单位, 是一个自然变换, 它在代数 $(a, f)$
+处的分量是 $f$.
+
+我们来算分量 $\mu_a$. 先把 $\varepsilon$ 水平组合在 $F^T$ 之后, 结果是
+$\varepsilon$ 在 $F^T\ a$ 处的分量. 由于 $F^T$ 把 $a$ 送到代数
+$(T\ a, \mu_a)$, 而 $\varepsilon$ 挑出求值器, 我们最后得到的就是 $\mu_a$.
+左边再与 $U^T$ 水平组合什么也没改变, 因为 $U^T$ 在态射上的作用是平凡的.
+所以的确, 从伴随得到的 $\mu$ 与原来那个单子 $T$ 的 $\mu$ 是同一个.
+
+\section{Kleisli 范畴}
+
+我们先前见过 Kleisli 范畴. 它由另一个范畴 $\cat{C}$ 加上一个单子 $T$ 构造而
+来. 我们把这个范畴叫作 $\cat{C}_T$. Kleisli 范畴 $\cat{C}_T$ 里的物件就是
+$\cat{C}$ 的物件, 但态射不同. Kleisli 范畴里一个从 $a$ 到 $b$ 的态射
+$f_{\cat{K}}$, 对应于原来那个范畴里一个从 $a$ 到 $T\ b$ 的态射 $f$. 我们把
+后一个态射叫作从 $a$ 到 $b$ 的 Kleisli 箭头.
+
+Kleisli 范畴里的态射复合, 是用 Kleisli 箭头的单子复合来定义的. 比如, 我们来
+把 $g_{\cat{K}}$ 复合在 $f_{\cat{K}}$ 之后. 在 Kleisli 范畴里我们有:
+\begin{gather*}
+  f_{\cat{K}} \Colon a \to b \\
+  g_{\cat{K}} \Colon b \to c
+\end{gather*}
+它在范畴 $\cat{C}$ 里对应于:
+\begin{gather*}
+  f \Colon a \to T\ b \\
+  g \Colon b \to T\ c
+\end{gather*}
+我们把复合
+\[h_{\cat{K}} = g_{\cat{K}} \circ f_{\cat{K}}\]
+定义成 $\cat{C}$ 里的一个 Kleisli 箭头
+\begin{align*}
+  h & \Colon a \to T\ c          \\
+  h & = \mu \circ (T\ g) \circ f
+\end{align*}
+用 Haskell 写出来就是:
+
+\src{snippet05}
+有一个从 $\cat{C}$ 到 $\cat{C}_T$ 的函子 $F$, 它在物件上的作用是平凡的. 在
+态射上, 它把 $\cat{C}$ 里的 $f$ 映成 $\cat{C}_T$ 里的一个态射, 办法是造出一
+个 Kleisli 箭头, 给 $f$ 的返回值添上装饰. 给定一个态射:
+\[f \Colon a \to b\]
+它造出 $\cat{C}_T$ 里一个带相应 Kleisli 箭头的态射:
+\[\eta \circ f\]
+用 Haskell 写出来就是:
+
+\src{snippet06}
+我们也可以定义一个从 $\cat{C}_T$ 回到 $\cat{C}$ 的函子 $G$. 它把 Kleisli 范
+畴里的物件 $a$ 映到 $\cat{C}$ 里的物件 $T\ a$. 它作用在一个对应于下面这个
+Kleisli 箭头的态射 $f_{\cat{K}}$ 上:
+\[f \Colon a \to T\ b\]
+得到 $\cat{C}$ 里的一个态射:
+\[T\ a \to T\ b\]
+做法是先提升 $f$, 再施加 $\mu$:
+\[\mu_{T b} \circ T\ f\]
+用 Haskell 记法写出来就是:
+
+\begin{snipv}
+G f\textsubscript{T} = join . fmap f
+\end{snipv}
+你大概认得, 这正是用 \code{join} 给出单子 \code{bind} 的那个定义.
+
+很容易看出这两个函子构成一个伴随:
+\[F \dashv G\]
+而它们的复合 $G \circ F$ 复现了原来那个单子 $T$.
+
+这就是生成同一个单子的第二个伴随. 实际上, 存在一整个伴随的范畴
+$\cat{Adj}(\cat{C}, T)$, 其中的伴随都能在 $\cat{C}$ 上得到同一个单子 $T$.
+我们刚看到的 Kleisli 伴随是这个范畴里的初始物件, 而 Eilenberg-Moore 伴随是
+终止物件.
+
+\section{余单子的余代数}
+
+对任何\hyperref[comonads]{余单子} $W$ 都能做类似的构造. 我们可以定义一个范
+畴, 里面是与余单子相容的余代数. 它们让下面这些图交换:
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}
+    \centering
+    \begin{tikzcd}[column sep=large, row sep=large]
+      a \arrow[rd, equal]
+      & Wa \arrow[l, "\epsilon_a"'] \\
+      & a \arrow[u, "coa"']
+    \end{tikzcd}
+  \end{subfigure}%
+  \hspace{1cm}
+  \begin{subfigure}
+    \centering
+    \begin{tikzcd}[column sep=large, row sep=large]
+      W(Wa)
+      & Wa \arrow[l, "W\ coa"'] \\
+      Wa \arrow[u, "\delta_a"]
+      & a \arrow[u, "coa"] \arrow[l, "coa"']
+    \end{tikzcd}
+  \end{subfigure}
+\end{figure}
+
+\noindent
+其中 $coa$ 是以 $a$ 为载体的那个余代数的余求值态射:
+\[coa \Colon a \to W\ a\]
+而 $\varepsilon$ 与 $\delta$ 是定义余单子的两个自然变换 (在 Haskell 里, 它
+们的分量叫作 \code{extract} 和 \code{duplicate}).
+
+从这些余代数的范畴到 $\cat{C}$ 有一个显而易见的遗忘函子 $U^W$. 它就是单纯把
+余求值忘掉. 我们来考虑它的右伴随 $F^W$.
+\[U^W \dashv F^W\]
+遗忘函子的右伴随叫作余自由函子. $F^W$ 生成余自由余代数. 它把 $\cat{C}$ 里的
+物件 $a$ 指派给余代数 $(W\ a, \delta_a)$. 这个伴随以复合
+$U^W \circ F^W$ 的形式复现了原来那个余单子.
+
+类似地, 我们可以构造一个带余 Kleisli 箭头的余 Kleisli 范畴, 并从相应的伴随
+重新得到那个余单子.
+
+\section{透镜}
+
+让我们回到对透镜的讨论. 一个透镜可以写成一个余代数:
+\[coalg_s \Colon a \to Store\ s\ a\]
+针对的函子是 $Store\ s$:
+
+\src{snippet07}
+这个余代数也可以表达成一对函数:
+\begin{align*}
+  set & \Colon a \to s \to a \\
+  get & \Colon a \to s
+\end{align*}
+(把 $a$ 想成 ``全部'', 把 $s$ 想成其中 ``一小块''.) 用这一对函数来说, 我们
+有:
+\[coalg_s\ a = Store\ (set\ a)\ (get\ a)\]
+这里 $a$ 是一个 $a$ 类型的值. 注意部分应用过的 \code{set} 是一个函数
+$s \to a$.
+
+我们还知道 $Store\ s$ 是一个余单子:
+
+\src{snippet08}
+问题是: 在什么条件下, 一个透镜是这个余单子的余代数? 第一个相容性条件:
+\[\varepsilon_a \circ coalg = \idarrow[a]\]
+翻译成:
+\[set\ a\ (get\ a) = a\]
+这是一条透镜定律, 它说的是: 把结构 $a$ 的某个字段设回它自己的旧值, 什么都
+不变.
+
+第二个条件:
+\[fmap\ coalg \circ coalg = \delta_a \circ coalg\]
+就要多费点功夫了. 首先, 回忆一下 \code{Store} 函子的 \code{fmap} 的定义:
+
+\src{snippet09}
+把 \code{fmap coalg} 施加到 \code{coalg} 的结果上, 我们得到:
+
+\src{snippet10}
+另一方面, 把 \code{duplicate} 施加到 \code{coalg} 的结果上, 产生的是:
+
+\src{snippet11}
+要让这两个表达式相等, \code{Store} 之下的那两个函数作用在任意 \code{s} 上必
+须相等:
+
+\src{snippet12}
+把 \code{coalg} 展开, 我们得到:
+
+\src{snippet13}
+这等价于剩下的那两条透镜定律. 第一条:
+
+\src{snippet14}
+告诉我们, 把一个字段的值设两次与只设一次是一回事. 第二条定律:
+
+\src{snippet15}
+告诉我们, 对一个刚被设成 $s$ 的字段取值, 拿回来的就是 $s$.
+
+换句话说, 一个表现良好的透镜确实是 \code{Store} 函子之上的一个余单子余代数.
+
+\section{挑战}
+
+\begin{enumerate}
+  \tightlist
+  \item
+        自由函子 $F \Colon C \to C^T$ 在态射上的作用是什么? 提示: 用单子
+        $\mu$ 的自然性条件.
+  \item
+        定义这个伴随:
+        \[U^W \dashv F^W\]
+  \item
+        证明上面这个伴随复现了原来那个余单子.
+\end{enumerate}

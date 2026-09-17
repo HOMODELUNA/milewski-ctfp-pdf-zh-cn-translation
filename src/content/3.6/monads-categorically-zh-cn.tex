@@ -1,0 +1,417 @@
+% !TEX root = ../../ctfp-print.tex
+
+\lettrine[lhang=0.17]{如}{果你}向一个程序员提起单子, 你们最后多半会聊到副作用. 而在数学家眼里,
+单子是代数. 代数我们稍后再谈 --- 它在编程里扮演着重要的角色 --- 不过先让我给你一点关于
+代数与单子之间关系的直觉. 姑且算是一个手挥式的论证, 请你多包涵.
+
+代数讲的是创造、操纵和求值表达式. 表达式是用运算符搭起来的. 看看这个简单的表达式:
+\[x^2 + 2 x + 1\]
+这个表达式由 $x$ 这样的变量、$1$ 或 $2$ 这样的常量, 用加法、乘法这样的运算符
+绑在一起构成. 作为程序员, 我们常常把表达式想成树.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\textwidth]{images/exptree.png}
+\end{figure}
+
+\noindent
+树是容器, 所以更一般地说, 表达式就是存放变量的容器. 在范畴论里, 我们把容器表示成
+自函子. 如果我们给变量 $x$ 指派类型 $a$, 那么这个表达式的类型就是
+$m\ a$, 其中 $m$ 是构造表达式树的自函子. (非平凡的分支表达式通常用递归定义的
+自函子来构造.)
+
+能在表达式上做的最常见的操作是什么? 是替换 (substitution): 用表达式去替换变量.
+比如说在我们的例子里, 我们可以把 $X$ 替换成 $y - 1$, 得到:
+\[(y - 1)^2 + 2 (y - 1) + 1\]
+这里发生了什么: 我们取了一个类型为 $m\ a$ 的表达式, 对它施加了一个类型为
+$a \to m\ b$ 的变换 ($b$ 代表 $y$ 的类型). 结果是一个类型为
+$m\ b$ 的表达式. 让我把它写清楚:
+\[m\ a \to (a \to m\ b) \to m\ b\]
+没错, 这正是单子式 bind 的签名.
+
+刚才那点算是动机. 现在言归正传, 来讲单子的数学. 数学家用的记法和程序员不同. 他们喜欢
+用字母 $T$ 表示自函子, 用希腊字母: $\mu$ 表示 \code{join}, $\eta$ 表示
+\code{return}. \code{join} 和 \code{return} 都是多态函数, 所以我们可以猜到
+它们对应的是自然变换.
+
+因此, 在范畴论里, 单子被定义为一个自函子 $T$, 装备着一对自然变换
+$\mu$ 和 $\eta$.
+
+$\mu$ 是从函子 $T$ 的平方 $T^2$ 回到 $T$ 的自然变换. 平方就是函子与自身
+复合, $T \circ T$ (这样的平方只有自函子做得了).
+\[\mu \Colon T^2 \to T\]
+这个自然变换在物件 $a$ 处的分量是这个态射:
+\[\mu_a \Colon T (T a) \to T a\]
+在 $\Hask$ 里, 它直接翻译成了我们对 \code{join} 的定义.
+
+$\eta$ 是恒等函子 $I$ 与 $T$ 之间的自然变换:
+\[\eta \Colon I \to T\]
+考虑到 $I$ 作用在物件 $a$ 上得到的就是 $a$, $\eta$ 的分量由这个态射给出:
+\[\eta_a \Colon a \to T a\]
+它直接翻译成了我们对 \code{return} 的定义.
+
+这些自然变换还必须满足一些额外的律. 一种看法是, 正是这些律让我们得以给自函子
+$T$ 定义一个 Kleisli 范畴. 记住, $a$ 与 $b$ 之间的 Kleisli 箭头定义为一个
+态射 $a \to T b$. 两个这样的箭头的复合 (我会写成一个带下标 $T$ 的圆圈)
+可以用 $\mu$ 实现:
+\[g \circ_T f = \mu_c \circ (T\ g) \circ f\]
+其中
+\begin{gather*}
+  f \Colon a \to T\ b \\
+  g \Colon b \to T\ c
+\end{gather*}
+这里 $T$ 作为一个函子, 可以被作用在态射 $g$ 上. 用 Haskell 记法来认这个公式
+也许更容易:
+
+\src{snippet01}
+或者按分量写:
+
+\src{snippet02}
+用代数式的解读来说, 我们不过是连续做了两次替换的组合.
+
+要让 Kleisli 箭头构成一个范畴, 我们希望它们的组合满足结合律, 并希望
+$\eta_a$ 是 $a$ 处的那个恒等 Kleisli 箭头. 这个要求可以翻译成关于
+$\mu$ 和 $\eta$ 的单子律. 但还有另一种推导这些律的方式, 它让这些律看起来更像
+幺半群律. 事实上, $\mu$ 常常被叫作\emph{乘法}, 而 $\eta$ --- \emph{单位}.
+
+粗略地说, 结合律说的是, 把 $T$ 的立方 $T^3$ 归约到 $T$ 的两条路径必须
+给出同样的结果. 两条单位律 (左单位律和右单位律) 说的是, 当 $\eta$ 作用在
+$T$ 上、再被 $\mu$ 归约时, 我们得到的还是 $T$.
+
+事情有点微妙, 因为我们在组合的是自然变换和函子. 所以先简单温习一下水平组合. 比如说,
+$T^3$ 可以看成 $T$ 之后 (after) 再组合 $T^2$. 我们可以对它施加两个自然变换的
+水平组合:
+\[I_T \circ \mu\]
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/assoc1.png}
+\end{figure}
+
+\noindent
+于是得到 $T \circ T$; 再施加 $\mu$ 就能进一步归约成 $T$.
+$I_T$ 是从 $T$ 到 $T$ 的恒等自然变换. 你经常会看到这种水平组合
+$I_T \circ \mu$ 的记法被简写成 $T \circ \mu$. 这个记法没有歧义,
+因为把一个函子与一个自然变换复合是毫无意义的, 所以在这里 $T$ 必定表示
+$I_T$.
+
+\noindent
+我们也可以把这张图画在 (自) 函子范畴 ${[}\cat{C}, \cat{C}{]}$ 里:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\textwidth]{images/assoc2.png}
+\end{figure}
+
+\noindent
+或者, 我们可以把 $T^3$ 当作 $T^2 \circ T$ 的组合, 对它施加
+$\mu \circ T$. 结果同样是 $T \circ T$, 而它又能用 $\mu$ 归约成
+$T$. 我们要求这两条路径产出相同的结果.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\textwidth]{images/assoc.png}
+\end{figure}
+
+\noindent
+类似地, 我们可以把水平组合 $\eta \circ T$ 施加到恒等函子 $I$ 之后
+$T$ 的组合上, 得到 $T^2$, 然后再用 $\mu$ 归约. 得到的结果应当与
+直接把恒等自然变换施加在 \code{T} 上相同. 同理, 对
+$T \circ \eta$ 也应当如此.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/unitlawcomp-1.png}
+\end{figure}
+
+\noindent
+你可以自己确认, 这些律保证了 Kleisli 箭头的组合确实满足范畴的律.
+
+单子与幺半群之间的相似之处十分醒目. 我们有乘法 $\mu$、单位 $\eta$、结合律
+和单位律. 但我们对幺半群的定义太窄了, 没法把单子说成是一个幺半群. 所以让我们把
+幺半群的概念推广一下.
+
+\section{幺半范畴}
+
+让我们回到幺半群的传统定义. 它是一个集合, 带一个二元运算和一个叫作单位元的特殊元素.
+在 Haskell 里, 这可以表达成一个类型类:
+
+\src{snippet03}
+二元运算 \code{mappend} 必须满足结合律、并且有单位元 (也就是说, 乘以单位元
+\code{mempty} 是个空操作).
+
+注意, 在 Haskell 里 \code{mappend} 的定义是柯里化的. 它可以被解读成把 \code{m}
+的每个元素映射成一个函数:
+
+\src{snippet04}
+正是这个解读带出了把幺半群定义成一个单物件范畴的做法, 其中的自态射 (endomorphism)
+\code{(m -> m)} 代表幺半群的元素. 但由于柯里化在 Haskell 里是与生俱来的, 我们
+完全可以从另一个乘法的定义出发:
+
+\src{snippet05}
+这里, 笛卡尔积 \code{(m, m)} 成了待相乘的数对的来源.
+
+这个定义暗示了另一条推广之路: 把笛卡尔积换成范畴意义上的积. 我们可以从一个积全局
+有定义的范畴出发, 从中挑一个物件 \code{m}, 把乘法定义成一个态射:
+\[\mu \Colon m\times{}m \to m\]
+不过我们有一个麻烦: 在任意范畴里都没法偷看物件的内部, 那该怎么挑出单位元呢? 这里
+有个把戏. 还记得元素选取等价于一个从单例集出发的函数吗? 在 Haskell 里, 我们可以把
+\code{mempty} 的定义换成一个函数:
+
+\src{snippet06}
+单例集是 $\Set$ 里的终止物件, 所以把这个定义推广到任何拥有终止物件 $t$ 的范畴上是很
+自然的:
+\[\eta \Colon t \to m\]
+这让我们不必谈论元素, 就能挑出那个 ``单位元''.
+
+跟我们先前把幺半群定义为单物件范畴不同, 这里的幺半律不是自动成立的 --- 我们必须
+把它们强加上去. 但要想表述这些律, 我们得先弄清底层的范畴意义上的积本身的幺半结构.
+先回顾一下幺半结构在 Haskell 里是怎么工作的.
+
+我们从结合律开始. 在 Haskell 里, 对应的等式律是:
+
+\src{snippet07}
+在把它推广到别的范畴之前, 我们得先把它重写成一个函数 (态射) 的等式. 我们得把它从
+对单个变量的作用中抽象出来 --- 换句话说, 我们得用无点的记法. 知道笛卡尔积是一个
+双函子之后, 我们可以把左边写成:
+
+\src{snippet08}
+把右边写成:
+
+\src{snippet09}
+这差不多就是我们想要的了. 可惜的是, 笛卡尔积并不是严格结合的 ---
+\code{(x, (y, z))} 与 \code{((x, y), z)} 并不相同 --- 所以我们没法直接写成
+无点的形式:
+
+\src{snippet10}
+但另一方面, 两种嵌套的数是同构的. 存在一个可逆函数, 叫作结合子 (associator),
+它在这两者之间来回转换:
+
+\src{snippet11}
+有了结合子的帮助, 我们就能为 \code{mu} 写出无点形式的结合律:
+
+\src{snippet12}
+类似的把戏也能用在单位律上, 用新记法写出来是:
+
+\src{snippet13}
+它们可以改写成:
+
+\src{snippet14}
+同构 \code{lambda} 和 \code{rho} 分别叫作左单位子 (left unitor) 和右单位子
+(right unitor). 它们见证了这个事实: 单位元 \code{()} 在笛卡尔积中充当
+同构意义下的恒等:
+
+\src{snippet15}
+
+\src{snippet16}
+于是单位律的无点版本是:
+
+\src{snippet17}
+我们把 \code{mu} 和 \code{eta} 的无点幺半律表述出来了, 用的是这样一个事实: 底层的
+笛卡尔积本身在类型的范畴里就像一个幺半式的乘法. 但请记住, 笛卡尔积的结合律和单位律
+只在同构意义下成立.
+
+原来这些律可以推广到任何拥有积与终止物件的范畴. 范畴意义上的积确实满足同构意义下的
+结合律, 终止物件也确实是在同构意义下的单位. 结合子与两个单位子都是自然同构. 这些律
+可以用交换图来表示.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/assocmon.png}
+\end{figure}
+
+\noindent
+注意, 因为积是一个双函子, 它能提升一对态射 --- 在 Haskell 里这是用 \code{bimap}
+做到的.
+
+我们本可以在这里停下, 说我们能在任何带有范畴意义上的积与终止物件的范畴之上定义一个
+幺半群. 只要我们能挑出一个物件 $m$ 和两个满足幺半律的态射 $\mu$ 与 $\eta$,
+我们就有了一个幺半群. 但我们还能做得更好. 要表述 $\mu$ 和 $\eta$ 的律, 我们并不
+需要一个货真价实的范畴意义上的积. 回想一下, 积是通过一个用到投影的万有构造定义的.
+而我们在幺半律的表述里根本没用过任何投影.
+
+一个表现得像积、却又不是积的双函子, 叫作\newterm{张量积 (tensor product)},
+常写作中缀运算符 $\otimes$. 张量积的一般定义有点微妙, 但我们不去纠结它. 我们只
+列出它的性质 --- 最重要的就是同构意义下的结合律.
+
+类似地, 我们也不需要物件 $t$ 是终止的. 我们从没用到它的终止性质 --- 也就是
+从任何物件到它存在唯一态射这件事. 我们要求的是它与张量积配合得好. 也就是说, 我们
+希望它是张量积的单位, 同样是在同构意义下. 让我们把这一切汇总起来:
+
+一个幺半范畴是一个装备了一个叫作张量积的双函子的范畴 $\cat{C}$:
+\[\otimes \Colon \cat{C}\times{}\cat{C} \to \cat{C}\]
+外加一个叫作单位物件的特别的物件 $i$, 再加三个自然同构, 分别叫作结合子与左、右
+单位子:
+\begin{align*}
+  \alpha_{a b c} & \Colon (a \otimes b) \otimes c \to a \otimes (b \otimes c) \\
+  \lambda_a      & \Colon i \otimes a \to a                                   \\
+  \rho_a         & \Colon a \otimes i \to a
+\end{align*}
+(简化四重张量积时还有一个相容性条件.)
+
+重要的是, 张量积描述了许多我们熟悉的双函子. 特别地, 一个积、一个余积都符合, 而且
+我们马上会看到, 自函子的复合也符合 (还有一些更玄的积, 比如 Day 卷积). 幺半范畴
+在富范畴的表述中将扮演关键角色.
+
+\section{幺半范畴里的幺半群}
+
+现在我们可以在幺半范畴这个更一般的设定下定义幺半群了. 先挑一个物件 $m$. 利用张量积
+我们可以构造 $m$ 的幂. $m$ 的平方是 $m \otimes m$. 构造 $m$ 的立方有两种方式,
+但它们通过结合子同构. $m$ 的更高次幂也是如此 (这正是我们需要相容性条件的地方).
+要构成一个幺半群, 我们需要挑两个态射:
+\begin{align*}
+  \mu  & \Colon m \otimes m \to m \\
+  \eta & \Colon i \to m
+\end{align*}
+其中 $i$ 是我们张量积的单位物件.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/monoid-1.jpg}
+\end{figure}
+
+\noindent
+这两个态射必须满足结合律与单位律, 它们可以用下面几张交换图来表述:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/assoctensor.jpg}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/unitmon.jpg}
+\end{figure}
+
+\noindent
+注意, 张量积是一个双函子这一点至关重要, 因为我们需要提升一对态射, 构成
+$\mu \otimes \id$ 或 $\eta \otimes \id$ 这样的积. 这些图不过是我们先前关于
+范畴意义上的积的结果的直接推广.
+
+\section{作为幺半群的单子}
+
+幺半结构会在意想不到的地方冒出来. 其中一个地方就是函子范畴. 稍微眯起眼睛, 你也许能
+看出函子的复合是一种乘法. 问题在于, 并非任意两个函子都能复合 --- 一个函子的目标
+范畴必须是另一个函子的源范畴. 这只是态射复合的常规规则 --- 而我们知道, 函子确实是
+范畴 $\Cat$ 里的态射. 但就像自态射 (绕回同一个物件的态射) 永远可复合一样, 自函子
+也永远可复合. 对给定的范畴 $\cat{C}$, 从 $\cat{C}$ 到 $\cat{C}$ 的自函子构成
+函子范畴 ${[}\cat{C}, \cat{C}{]}$. 它的物件是自函子, 态射是它们之间的自然变换.
+我们可以从这个范畴里取任意两个物件, 比如说自函子 $F$ 和 $G$, 造出第三个物件
+$F \circ G$ --- 一个作为它们的复合的自函子.
+
+自函子的复合是张量积的好候选吗? 首先我们得确认它是个双函子. 它能用来提升一对态射
+--- 在这里是自然变换 --- 吗? 张量积的这个 \code{bimap} 对应物, 其签名看起来
+大概是这样:
+\[bimap \Colon (a \to b) \to (c \to d) \to (a \otimes c \to b \otimes d)\]
+如果把物件换成自函子、箭头换成自然变换、张量积换成复合, 你就得到:
+\[(F \to F') \to (G \to G') \to (F \circ G \to F' \circ G')\]
+这正是水平组合的一个特例, 你或许认得它.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/horizcomp.png}
+\end{figure}
+
+\noindent
+我们还手上有恒等自函子 $I$, 它可以充当自函子复合 --- 我们的新张量积 --- 的
+单位. 不仅如此, 函子的复合还是结合的. 事实上, 结合律与单位律都是严格的 ---
+不需要结合子, 也不需要两个单位子. 所以自函子以函子复合为张量积, 构成一个严格幺半
+范畴.
+
+这个范畴里的幺半群是什么? 它是一个物件 --- 也就是一个自函子 $T$; 加上两个态射
+--- 也就是两个自然变换:
+\begin{gather*}
+  \mu \Colon T \circ T \to T \\
+  \eta \Colon I \to T
+\end{gather*}
+不仅如此, 这里还有幺半群律:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/assoc.png}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/unitlawcomp.png}
+\end{figure}
+
+\noindent
+它们正是我们之前见过的单子律. 现在你懂了 Saunders Mac Lane 那句名言:
+
+\begin{quote}
+  说了这么多, 单子不过是自函子范畴里的一个幺半群.
+\end{quote}
+你可能在一些函数式编程大会的 T 恤上见过这句话印得大大的.
+
+\section{从伴随导出单子}
+
+一个\hyperref[adjunctions]{伴随}\footnote{见第 18 章 \hyperref[adjunctions]{伴随}.}
+$L \dashv R$ 是一对在两个范畴 $\cat{C}$ 与 $\cat{D}$ 之间来来去去的函子. 它们有
+两种复合方式, 由此得到两个自函子, $R \circ L$ 和 $L \circ R$. 按照伴随的定义,
+这两个自函子通过两个自然变换与恒等函子发生关联, 这两个自然变换叫作单位与余单位:
+\begin{gather*}
+  \eta \Colon I_{\cat{D}} \to R \circ L \\
+  \varepsilon \Colon L \circ R \to I_{\cat{C}}
+\end{gather*}
+一眼就能看出, 伴随的单位长得跟单子的单位一模一样. 事实证明, 自函子
+$R \circ L$ 确实是一个单子. 我们要做的不过是定义出与 $\eta$ 搭配的那个合适的
+$\mu$. 它是自函子的平方与自函子本身之间的一个自然变换, 用伴随函子的术语写就是:
+\[R \circ L \circ R \circ L \to R \circ L\]
+的确, 我们可以用余单位把中间的 $L \circ R$ 折叠掉. $\mu$ 的确切公式由水平
+组合给出:
+\[\mu = R \circ \varepsilon \circ L\]
+单子律可以从伴随的单位与余单位所满足的恒等式以及交换法则推出来.
+
+在 Haskell 里我们见不到太多从伴随导出的单子, 因为一个伴随通常牵涉两个范畴. 不过,
+指数、也就是函数物件的定义是个例外. 形成这个伴随的两个自函子是:
+\begin{gather*}
+  L\ z = z\times{}s \\
+  R\ b = s \Rightarrow b
+\end{gather*}
+你可以把它们的复合认作那个我们熟悉的状态单子:
+\[R\ (L\ z) = s \Rightarrow (z\times{}s)\]
+这个单子我们之前在 Haskell 里见过:
+
+\src{snippet18}
+让我们也把这个伴随翻译成 Haskell. 左边的函子是乘积函子:
+
+\src{snippet19}
+右边的函子是读者函子:
+
+\src{snippet20}
+它们构成伴随:
+
+\src{snippet21}
+你很容易就能说服自己, 乘积函子之后复合读者函子确实等价于状态函子:
+
+\src{snippet22}
+不出所料, 伴随的 \code{unit} 等价于状态单子的 \code{return} 函数.
+\code{counit} 的作用方式是对一个作用在其参数上的函数求值. 这可以认出来就是
+\code{runState} 函数的未柯里化版本:
+
+\src{snippet23}
+(未柯里化, 因为在 \code{counit} 里它作用在一个数对上.)
+
+现在我们可以把 \code{join} 定义为自然变换 $\mu$ 的一个分量. 为此我们需要三个
+自然变换的水平组合:
+\[\mu = R \circ \varepsilon \circ L\]
+换句话说, 我们需要把余单位 $\varepsilon$ 偷偷挪过读者函子的一层. 我们没法直接
+调用 \code{fmap}, 因为编译器会挑 \code{State} 函子的那个 \code{fmap}, 而不是
+\code{Reader} 函子的那个. 但回想一下, 读者函子的 \code{fmap} 就是函数的左复合.
+所以我们就直接用函数复合.
+
+我们得先剥掉数据构造器 \code{State}, 把 \code{State} 函子里面那个函数露出来.
+这一步用 \code{runState} 完成:
+
+\src{snippet24}
+然后用余单位对它做左复合, 余单位的定义是 \code{uncurry runState}. 最后, 我们
+把它重新穿进 \code{State} 数据构造器里:
+
+\src{snippet25}
+这确实就是 \code{State} 单子的 \code{join} 实现.
+
+事实证明, 不仅每个伴随都能带出一个单子, 反过来也成立: 每个单子都可以因子化成两个
+伴随函子的复合. 只是这样的因子化并不唯一.
+
+另一个自函子 $L \circ R$, 我们下一节再谈.

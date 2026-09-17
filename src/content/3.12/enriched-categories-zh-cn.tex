@@ -1,0 +1,326 @@
+% !TEX root = ../../ctfp-print.tex
+
+\lettrine[lhang=0.17]{一}{个范畴是小的}, 如果它的物件们组成一个集合. 可我们知道, 有些东西
+比集合更大. 最有名的是, 在标准的集合论 (策梅洛-弗兰克尔理论, 可选择性地加上选择公理) 里, 所有
+集合的集合是无法构成的. 所以所有集合构成的范畴必定是大的. 数学上有一些技巧, 比如格罗滕迪克宇
+宙, 能用来定义超出集合之外的收集. 这些技巧让我们得以谈论大范畴.
+
+一个范畴是 \emph{局部小} 的, 如果任意两个物件之间的态射组成一个集合. 要是它们组不成一个集
+合, 我们就得重新思考几个定义. 尤其地, 连从集合里把态射挑出来都做不到, 那复合态射到底意味着什
+么? 解决办法是自举: 把 hom-集合 --- 它们是 $\Set$ 里的物件 --- 换成另一个范畴 $\cat{V}$
+里的\emph{物件}. 区别在于, 一般的物件并没有元素, 于是我们再也不许谈论单个的态射. 我们必须用能
+够对整个 hom-物件施加的运算, 来定义一个 \emph{富化的} 范畴的所有性质. 要想办到这一点, 提供
+hom-物件的那个范畴必须带有额外的结构 --- 它必须是一个幺半范畴. 如果我们把这个幺半范畴叫作
+$\cat{V}$, 就可以谈论在 $\cat{V}$ 上富化起来的范畴 $\cat{C}$.
+
+除了大小的缘由, 我们可能还有兴趣把 hom-集合推广成某种比单纯的集合更有结构的东西. 比如, 一个
+传统范畴并没有物件之间距离的概念. 两个物件要么由态射连着, 要么没连着. 所有与给定物件相连的物
+件都是它的邻居. 与现实生活不同, 在范畴里, 朋友的朋友的朋友, 与我的知心好友离我一样近. 在一个适
+当富化起来的范畴里, 我们能定义物件之间的距离.
+
+还有一个非常实际的理由让人想去积累一些富范畴的经验, 那就是有一个极有用的范畴论知识在线资源,
+\urlref{https://ncatlab.org/}{nLab}, 它多半就是用富范畴的语言写成的.
+
+\section{为什么要幺半范畴?}
+
+构造一个富范畴时, 我们必须牢记: 当把幺半范畴换回 $\Set$、把 hom-物件换回 hom-集合时, 应当能恢复
+出通常的那些定义. 办成这件事最好的办法, 就是从通常的定义出发, 一路把它们改写成无点的形式 --- 也就是
+不去点出集合的元素.
+
+先从复合的定义说起. 通常它取一对态射, 一个来自 $\cat{C}(b, c)$, 一个来自 $\cat{C}(a, b)$,
+把它映成 $\cat{C}(a, c)$ 里的一个态射. 换句话说, 它是一个映射:
+\[\cat{C}(b, c)\times{}\cat{C}(a, b) \to \cat{C}(a, c)\]
+这是集合之间的一个函数 --- 其中一个集合是两个 hom-集合的笛卡尔积. 这个公式很容易推广, 只要把笛卡尔
+积换成更一般的东西. 换成范畴的积也行, 但我们还能走得更远, 直接用一个完全一般的张量积.
+
+接下来是恒等态射. 我们不再从 hom-集合里挑出单个的元素, 而是用从单元素集合 $\cat{1}$ 出发的函数
+来定义它们:
+\[j_a \Colon \cat{1} \to \cat{C}(a, a)\]
+同样, 我们本可以把单元素集合换成终止物件, 但我们还能更进一步, 把它换成张量积的单位 $i$.
+
+如你所见, 取自某个幺半范畴 $\cat{V}$ 的物件, 正是替代 hom-集合的绝佳候选.
+
+\section{幺半范畴}
+
+我们先前谈过幺半范畴, 但这个定义值得重说一遍. 一个幺半范畴定义了一个作为双函子的张量积:
+\[\otimes \Colon \cat{V}\times{}\cat{V} \to \cat{V}\]
+我们想要张量积满足结合律, 但只要结合性在自然同构的意义下成立就够了. 这个同构叫作结合子, 它的分量
+是:
+\[\alpha_{a b c} \Colon (a \otimes b) \otimes c \to a \otimes (b \otimes c)\]
+它必须在三个参数上都是自然的.
+
+幺半范畴还必须定义一个特殊的单位物件 $i$, 它充当张量积的单位; 同样, 只要在自然同构的意义下成立
+即可. 这两个同构分别叫作左单位子和右单位子, 它们的分量是:
+\begin{align*}
+  \lambda_a & \Colon i \otimes a \to a \\
+  \rho_a    & \Colon a \otimes i \to a
+\end{align*}
+结合子与单位子必须满足相容性条件:
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzcd}[row sep=large]
+    ((a \otimes b) \otimes c) \otimes d
+    \arrow[d, "\alpha_{(a \otimes b)cd}"]
+    \arrow[rr, "\alpha_{abc} \otimes \id_d"]
+    & & (a \otimes (b \otimes c)) \otimes d
+    \arrow[d, "\alpha_{a(b \otimes c)d}"] \\
+    (a \otimes b) \otimes (c \otimes d)
+    \arrow[rd, "\alpha_{ab(c \otimes d)}"]
+    & & a \otimes ((b \otimes c) \otimes d)
+    \arrow[ld, "\id_a \otimes \alpha_{bcd}"] \\
+    & a \otimes (b \otimes (c \otimes d))
+  \end{tikzcd}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzcd}[row sep=large]
+    (a \otimes i) \otimes b
+    \arrow[dr, "\rho_{a} \otimes \id_b"']
+    \arrow[rr, "\alpha_{aib}"]
+    & & a \otimes (i \otimes b)
+    \arrow[dl, "\id_a \otimes \lambda_b"] \\
+    & a \otimes b
+  \end{tikzcd}
+\end{figure}
+
+\noindent
+一个幺半范畴, 若存在一个分量形如下式的自然同构
+\[\gamma_{a b} \Colon a \otimes b \to b \otimes a\]
+它的 ``平方为一'',
+\[\gamma_{b a} \circ \gamma_{a b} = \idarrow[a \otimes b]\]
+并且与幺半结构相容, 就叫 \newterm{symmetric 对称的}.
+
+关于幺半范畴, 有意思的地方在于: 你也许能把内部 hom (也就是函数物件) 定义成张量积的右伴随. 你可能还
+记得, 函数物件 —— 亦即指数 —— 的标准定义, 正是通过范畴积的右伴随给出的. 若这样一对物件对任何物件对都
+存在, 这个范畴就叫笛卡尔闭的. 下面就是在幺半范畴里定义内部 hom 的那个伴随:
+\[\cat{V}(a \otimes b, c) \sim \cat{V}(a, [b, c])\]
+我跟着
+\urlref{http://www.tac.mta.ca/tac/reprints/articles/10/tr10.pdf}{G. M.
+  Kelly} 的用法, 用记号 ${[}b, c{]}$ 表示内部 hom. 这个伴随的余单位是一个自然变换, 它的分量叫作
+求值态射:
+\[\varepsilon_{a b} \Colon ([a, b] \otimes a) \to b\]
+注意, 若张量积不对称, 我们还可以用下面这个伴随定义另一个内部 hom, 记作 ${[}{[}a, c{]}{]}$:
+\[\cat{V}(a \otimes b, c) \sim \cat{V}(b, [[a, c]])\]
+两个内部 hom 都能定义出来的幺半范畴, 叫作 \newterm{biclosed 双闭的}. 一个不是双闭的范畴的例子,
+是 $\Set$ 上的自函子范畴, 它拿函子复合当张量积. 那正是我们用来定义单子的范畴.
+
+\section{富范畴}
+
+一个在幺半范畴 $\cat{V}$ 上富化起来的范畴 $\cat{C}$, 用 hom-物件取代了 hom-集合. 对 $\cat{C}$
+里的每一对物件 $a$ 与 $b$, 我们都关联上 $\cat{V}$ 里的一个物件 $\cat{C}(a, b)$. hom-物件
+沿用它作为 hom-集合时用过的那个记号, 只是心里明白它并不装着态射. 另一方面, $\cat{V}$ 是一个普通的
+(未富化的) 范畴, 有 hom-集合, 也有态射. 所以我们并没有彻底摆脱集合 --- 只是把它们扫到了地毯底下.
+
+由于我们无法谈论 $\cat{C}$ 里单个的态射, 态射的复合就被换成 $\cat{V}$ 里的一族态射:
+\[\circ \Colon \cat{C}(b, c) \otimes \cat{C}(a, b) \to \cat{C}(a, c)\]
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.45\textwidth]{images/composition.jpg}
+\end{figure}
+
+\noindent
+类似地, 恒等态射也被换成 $\cat{V}$ 里的一族态射:
+\[j_a \Colon i \to \cat{C}(a, a)\]
+其中 $i$ 是 $\cat{V}$ 里的张量单位.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/id.jpg}
+\end{figure}
+
+\noindent
+复合的结合性, 是用 $\cat{V}$ 里的结合子来定义的:
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzcd}[column sep=large]
+    (\cat{C}(c,d) \otimes \cat{C}(b,c)) \otimes \cat{C}(a,b)
+    \arrow[r, "\circ\otimes\id"]
+    \arrow[dd, "\alpha"]
+    & \cat{C}(b,d) \otimes \cat{C}(a,b)
+    \arrow[dr, "\circ"] \\
+    & & \cat{C}(a,d) \\
+    \cat{C}(c,d) \otimes (\cat{C}(b,c) \otimes \cat{C}(a,b))
+    \arrow[r, "\id\otimes\circ"]
+    & \cat{C}(c,d) \otimes \cat{C}(a,c)
+    \arrow[ur, "\circ"]
+  \end{tikzcd}
+\end{figure}
+
+\noindent
+单位律同样是用单位子来表达的:
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}
+    \centering
+    \begin{tikzcd}[row sep=large]
+      \cat{C}(a,b) \otimes i
+      \arrow[rr, "\id \otimes j_a"]
+      \arrow[dr, "\rho"]
+      & & \cat{C}(a,b) \otimes \cat{C}(a,a)
+      \arrow[dl, "\circ"] \\
+      & \cat{C}(a,b)
+    \end{tikzcd}
+  \end{subfigure}
+  \hspace{1cm}
+  \begin{subfigure}
+    \centering
+    \begin{tikzcd}[row sep=large]
+      i \otimes \cat{C}(a,b)
+      \arrow[rr, "j_b \otimes \id"]
+      \arrow[dr, "\lambda"]
+      & & \cat{C}(b,b) \otimes \cat{C}(a,b)
+      \arrow[dl, "\circ"] \\
+      & \cat{C}(a,b)
+    \end{tikzcd}
+  \end{subfigure}
+\end{figure}
+
+\section{预序}
+
+预序被定义成一个薄范畴, 也就是每个 hom-集合要么为空、要么为单元素的范畴. 我们把非空的集合
+$\cat{C}(a, b)$ 解读成 $a$ 小于等于 $b$ 的证明. 这样的范畴可以被解读成在一个极其简单的幺半范畴
+上富化而来, 那个幺半范畴只有两个物件, $0$ 和 $1$ (有时叫作 $False$ 和 $True$). 除了必不可少的
+恒等态射, 这个范畴还有一个从 $0$ 走向 $1$ 的态射, 我们就叫它 $0 \to 1$. 我们能在它上面建立起
+一个简单的幺半结构, 让张量积模拟 $0$ 与 $1$ 的那套简单算术 (也就是说, 唯一非零的积是
+$1 \otimes 1$). 这个范畴里的单位物件是 $1$. 这是一个严格幺半范畴, 也就是说, 结合子和单位子都是
+恒等态射.
+
+既然在预序里 hom-集合要么为空要么为单元素, 我们就能轻松把它换成我们这个小范畴里的一个 hom-物件.
+富化的预序 $\cat{C}$ 对任何一对物件 $a$ 与 $b$ 都有一个 hom-物件 $\cat{C}(a, b)$. 若 $a$ 小于
+等于 $b$, 这个物件就是 $1$; 否则它就是 $0$.
+
+我们来看看复合. 任何两个物件的张量积都是 $0$, 除非两者都是 $1$, 那时它才是 $1$. 若是 $0$, 那复
+合态射就有两个选择: 可以是 $\idarrow[0]$, 也可以是 $0 \to 1$. 但若是 $1$, 唯一的选择就是
+$\idarrow[1]$. 把这翻回关系这边来看, 它说的正是: 若 $a \leqslant b$ 且 $b \leqslant c$, 则
+$a \leqslant c$ —— 恰好是我们需要的传递律.
+
+那恒等呢? 它是一个从 $1$ 到 $\cat{C}(a, a)$ 的态射. 从 $1$ 出发的态射只有一个, 就是恒等
+$\idarrow[1]$, 所以 $\cat{C}(a, a)$ 必须是 $1$. 这意味着 $a \leqslant a$, 也就是预序的自反律.
+所以, 只要把预序实现成一个富范畴, 传递性与自反性就都被自动强制成立了.
+
+\section{度量空间}
+
+有一个有意思的例子, 出自
+\urlref{http://www.tac.mta.ca/tac/reprints/articles/1/tr1.pdf}{William
+  Lawvere}. 他注意到, 度量空间可以用富范畴来定义. 一个度量空间为任何两个物件定义了
+一个距离. 这个距离是一个非负实数. 把无穷也当成一个可能的取值会更方便些. 若距离是无穷大,
+就没有任何办法从起点物件走到终点物件.
+
+距离必须满足几条显而易见的性质. 其一是从一个物件到它自身的距离必须为零. 其二是三角不等式:
+直达的距离不大于中途停靠的距离之和. 我们不要求距离是对称的 —— 头一眼看去这有点怪, 但正如
+Lawvere 解释的, 你大可以想象一个方向是上坡, 另一个方向是下坡. 无论如何, 对称性可以稍后作为
+额外的约束再加上去.
+
+那么, 怎么把度量空间塞进范畴论的语言里? 我们必须构造一个范畴, 让它的 hom-物件就是距离.
+请注意, 距离不是态射, 而是 hom-物件. 一个 hom-物件怎么会是一个数? 只有一种可能: 我们能
+构造出一个幺半范畴 $\cat{V}$, 让这些数成为它的物件. 非负实数 (再加上无穷) 构成一个全序,
+所以它们可以被当成一个薄范畴. 两个这样的数 $x$ 与 $y$ 之间存在一个态射, 当且仅当
+$x \geqslant y$ (注意: 这与定义预序时传统上用的方向恰好相反). 幺半结构由加法给出,
+零充当单位物件. 换句话说, 两个数的张量积就是它们的和.
+
+一个度量空间就是在这样一个幺半范畴上富化起来的范畴. 从物件 $a$ 到 $b$ 的 hom-物件
+$\cat{C}(a, b)$ 是一个非负的 (可能是无穷的) 数, 我们把它叫作从 $a$ 到 $b$ 的距离.
+我们来看看在这样的范畴里, 恒等和复合各会变成什么.
+
+按照我们的定义, 一个从张量单位 (也就是数零) 走向 hom-物件 $\cat{C}(a, a)$ 的态射, 就是关系:
+\[0 \geqslant \cat{C}(a, a)\]
+由于 $\cat{C}(a, a)$ 是一个非负数, 这个条件告诉我们, 从 $a$ 到 $a$ 的距离总是零. 检查通过!
+
+现在来谈复合. 我们从两个首尾相接的 hom-物件的张量积出发, $\cat{C}(b, c) \otimes \cat{C}(a, b)$.
+我们把张量积定义成两个距离之和. 复合是 $\cat{V}$ 里从这个积走向 $\cat{C}(a, c)$ 的一个态射. 而
+$\cat{V}$ 里的态射定义成大于等于关系. 换句话说, 从 $a$ 到 $b$ 的距离与从 $b$ 到 $c$ 的距离之和,
+大于等于从 $a$ 到 $c$ 的距离. 可这就是标准的三角不等式. 检查通过!
+
+把度量空间重新表述成富范畴, 我们就 ``免费'' 得到了三角不等式和零自距离.
+
+\section{富函子}
+
+函子的定义里牵涉态射之间的映射. 在富化的设定下, 我们没有单个态射的概念, 所以只能成批地跟 hom-物件打
+交道. hom-物件是幺半范畴 $\cat{V}$ 里的物件, 而我们手上有它们之间的态射可用. 因此, 在两个范畴都在同
+一个幺半范畴 $\cat{V}$ 上富化时, 定义它们之间的富函子是有意义的. 这样我们就能用 $\cat{V}$ 里的态射,
+在两个富范畴之间映射 hom-物件.
+
+两个范畴 $\cat{C}$ 与 $\cat{D}$ 之间的一个 \newterm{enriched functor 富函子} $F$, 除了把物件映到
+物件, 还为 $\cat{C}$ 里的每一对物件指定了 $\cat{V}$ 里的一个态射:
+\[F_{a b} \Colon \cat{C}(a, b) \to \cat{D}(F\ a, F\ b)\]
+函子是一个保持结构的映射. 对普通的函子来说, 这意味着保持复合与恒等. 在富化的设定下, 保持复合
+意味着下面这个图交换:
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzcd}[column sep=large, row sep=large]
+    \cat{C}(b,c) \otimes \cat{C}(a,b)
+    \arrow[r, "\circ"]
+    \arrow[d, "F_{bc} \otimes F_{ab}"]
+    & \cat{C}(a,c)
+    \arrow[d, "F_{ac}"] \\
+    \cat{D}(F\ b, F\ c) \otimes \cat{D}(F\ a, F\ b)
+    \arrow[r,  "\circ"]
+    & \cat{D}(F\ a, F\ c)
+  \end{tikzcd}
+\end{figure}
+
+\noindent
+而保持恒等, 则被换成保持 $\cat{V}$ 里那些 ``挑出'' 恒等的态射:
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzcd}[row sep=large]
+    & i \arrow[dl, "j_a"'] \arrow[dr, "j_{F a}"] & \\
+    \cat{C}(a,a)
+    \arrow[rr, "F_{aa}"]
+    & & \cat{D}(F\ a, F\ a)
+  \end{tikzcd}
+\end{figure}
+
+\section{自富化}
+
+一个闭的对称幺半范畴可以通过把 hom-集合换成内部 hom 来自身富化 (见上面的定义). 要让它成立, 我们必须
+为内部 hom 定义复合法则. 换句话说, 我们必须实现一个具有如下签名的态射:
+\[[b, c] \otimes [a, b] \to [a, c]\]
+这跟别的编程任务没多大差别, 只是在范畴论里, 我们通常用无点的实现. 我们先说定它应当是哪个集合的
+元素. 在这个例子里, 它是这个 hom-集合的成员:
+\[\cat{V}([b, c] \otimes [a, b], [a, c])\]
+而这个 hom-集合同构于:
+\[\cat{V}(([b, c] \otimes [a, b]) \otimes a, c)\]
+我刚刚用到了定义内部 hom ${[}a, c{]}$ 的那个伴随. 只要能在这个新集合里造出一个态射, 伴随就会把
+我们指回原来那个集合里的态射, 而我们就能拿它当复合用. 我们靠复合手边已有的几个态射来构造这个
+态射. 第一步, 我们可以用结合子 $\alpha_{{[}b, c{]}\ {[}a, b{]}\ a}$ 把左边的表达式重新结合:
+\[([b, c] \otimes [a, b]) \otimes a \to [b, c] \otimes ([a, b] \otimes a)\]
+接着跟上这个伴随的余单位 $\varepsilon_{a b}$:
+\[[b, c] \otimes ([a, b] \otimes a) \to [b, c] \otimes b\]
+再动用一次余单位 $\varepsilon_{b c}$ 走到 $c$. 就这样, 我们构造出了一个态射:
+\[\varepsilon_{b c}\ .\ (\idarrow[{[b, c]}] \otimes \varepsilon_{a b})\ .\ \alpha_{[b, c] [a, b] a}\]
+它是这个 hom-集合的一个元素:
+\[\cat{V}(([b, c] \otimes [a, b]) \otimes a, c)\]
+于是伴随就给了我们一直在找的那条复合法则.
+
+类似地, 恒等:
+\[j_a \Colon i \to [a, a]\]
+是下面这个 hom-集合的成员:
+\[\cat{V}(i, [a, a])\]
+而这个集合通过伴随同构于:
+\[\cat{V}(i \otimes a, a)\]
+我们知道这个 hom-集合里含有左单位 $\lambda_a$. 我们就把它在这个伴随之下的像定义为 $j_a$.
+
+自富化一个实际例子, 就是范畴 $\Set$ —— 它是编程语言里类型的原型. 我们先前已经见过, 关于笛卡尔积它是
+一个闭幺半范畴. 在 $\Set$ 里, 任何两个集合之间的 hom-集合本身又是一个集合, 所以它是 $\Set$ 里的一
+个物件. 我们知道它同构于指数集合, 因此外部 hom 与内部 hom 是等价的. 现在我们还知道, 靠自富化, 我们可
+以拿指数集合当 hom-物件, 并用指数物件的笛卡尔积来表达复合.
+
+\section{与 $\cat{2}$-范畴的关系}
+
+我在讲 $\Cat$ —— 也就是 (小) 范畴构成的范畴 —— 时谈过 $\cat{2}$-范畴. 范畴之间的态射是函子, 但这里
+还多了一层结构: 函子之间的自然变换. 在一个 $\cat{2}$-范畴里, 物件常被叫作 $0$-胞腔; 态射是
+$1$-胞腔; 态射之间的态射则是 $2$-胞腔. 在 $\Cat$ 里, $0$-胞腔是范畴, $1$-胞腔是函子,
+$2$-胞腔是自然变换.
+
+但请注意, 两个范畴之间的函子自己也组成一个范畴; 所以在 $\Cat$ 里, 我们真正拥有的是一个
+\emph{hom-范畴} 而不是一个 hom-集合. 事实证明, 就像 $\Set$ 可以被当作一个在 $\Set$ 上富化
+的范畴, $\Cat$ 也可以被当作一个在 $\Cat$ 上富化的范畴. 更一般地说, 就像每个范畴都可以被当作
+在 $\Set$ 上富化而来, 每个 $\cat{2}$-范畴都可以被看作在 $\Cat$ 上富化而来.

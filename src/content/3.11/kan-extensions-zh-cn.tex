@@ -1,0 +1,363 @@
+% !TEX root = ../../ctfp-print.tex
+
+\lettrine[lhang=0.17]{到}{目前为止}, 我们打交道的多半是单个范畴, 或者一对范畴. 有些时候,
+这限制得有点死.
+
+比如, 在范畴 $\cat{C}$ 里定义极限时, 我们引入了一个索引范畴 $\cat{I}$, 用它当作模式的模板, 而这个模
+式正是我们那些锥的底. 其实, 再引入一个范畴 —— 一个平凡范畴 —— 当作锥的顶点的模板, 会更说得通. 可当时
+我们用的是从 $\cat{I}$ 到 $\cat{C}$ 的常函子 $\Delta_c$.
+
+是时候修补这个别扭之处了. 我们用三个范畴来定义极限. 先从索引范畴 $\cat{I}$ 到 $\cat{C}$ 的函子 $D$
+说起. 这个函子挑出锥的底 —— 也就是图式函子.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan2.jpg}
+\end{figure}
+
+\noindent
+新加进来的成员是范畴 $\cat{1}$, 它只含一个物件 (以及一个恒等态射). 从 $\cat{I}$ 到这个范畴只可能有
+一个函子 $K$. 它把所有物件都映到 $\cat{1}$ 里唯一的那个物件, 把所有态射都映到恒等态射. 任何一个从
+$\cat{1}$ 到 $\cat{C}$ 的函子 $F$, 都为我们的锥挑出了一个候选顶点.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan15.jpg}
+\end{figure}
+
+\noindent
+一个锥就是从 $F \circ K$ 到 $D$ 的一个自然变换 $\varepsilon$. 注意, $F \circ K$ 做的事情跟我们原来
+的 $\Delta_c$ 一模一样. 下面这张图展示的就是这个变换.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan3-e1492120491591.jpg}
+\end{figure}
+
+\noindent
+现在我们可以定义一条普遍性质, 从中挑出 ``最好'' 的那个函子 $F$. 这个 $F$ 会把 $\cat{1}$ 映到那个
+物件上, 而它正是 $D$ 在 $\cat{C}$ 里的极限; 从 $F \circ K$ 到 $D$ 的自然变换 $\varepsilon$ 则会提
+供相应的投影. 这个普遍函子叫作 $D$ 沿 $K$ 的右 Kan 扩张, 记作 $\Ran_{K}D$.
+
+我们来把这条普遍性质表述清楚. 假设我们还有另一个锥 —— 也就是另一个函子 $F'$, 配上一个从
+$F' \circ K$ 到 $D$ 的自然变换 $\varepsilon'$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan31-e1492120512209.jpg}
+\end{figure}
+
+\noindent
+若 Kan 扩张 $F = Ran_{K}D$ 存在, 那就必定存在一个从 $F'$ 到它的唯一自然变换 $\sigma$, 使得
+$\varepsilon'$ 经由 $\varepsilon$ 分解, 也就是说:
+\[\varepsilon' = \varepsilon\ .\ (\sigma \circ K)\]
+这里 $\sigma \circ K$ 是两个自然变换的水平组合 (其中一个是 $K$ 上的恒等自然变换). 这个变换再与
+$\varepsilon$ 做垂直组合.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan5.jpg}
+\end{figure}
+
+\noindent
+写成分量, 也就是作用在 $\cat{I}$ 里的某个物件 $i$ 上时, 我们得到:
+\[\varepsilon'_i = \varepsilon_i \circ \sigma_{K i}\]
+在我们这个例子里, $\sigma$ 只有一个分量, 对应于 $\cat{1}$ 的那唯一物件. 所以, 它确实是一个唯一的态
+射, 从 $F'$ 所定义的锥的顶点, 走到 $\Ran_{K}D$ 所定义的普遍锥的顶点. 那些交换条件, 正是极限的定义所
+要求的条件.
+
+但更重要的是, 我们完全可以把平凡范畴 $\cat{1}$ 换成任意范畴 $\cat{A}$, 而右 Kan 扩张的定义依然成立.
+
+\section{右 Kan 扩张}
+
+函子 $D \Colon \cat{I} \to \cat{C}$ 沿函子 $K \Colon \cat{I} \to \cat{A}$ 的右 Kan 扩张, 是一个函子
+$F \Colon \cat{A} \to \cat{C}$ (记作 $\Ran_{K}D$), 配上这样一个自然变换
+\[\varepsilon \Colon F \circ K \to D\]
+使得对任何别的函子 $F' \Colon \cat{A} \to \cat{C}$ 和任何别的自然变换
+\[\varepsilon' \Colon F' \circ K \to D\]
+都存在唯一的自然变换
+\[\sigma \Colon F' \to F\]
+把 $\varepsilon'$ 分解出来:
+\[\varepsilon' = \varepsilon\ .\ (\sigma \circ K)\]
+这一大串念起来着实拗口, 但它可以用一张漂亮的图式来直观呈现:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan7.jpg}
+\end{figure}
+
+\noindent
+看待它的一个有意思的角度是这样的: 从某种意义上说, Kan 扩张的作用就像是
+``函子乘法'' 的逆运算. 有些作者甚至直接用 $D/K$ 来记 $\Ran_{K}D$. 的确, 用这个记法, $\varepsilon$
+的定义 —— 它也叫作右 Kan 扩张的余单位 —— 看上去就只是简单的约分:
+\[\varepsilon \Colon D/K \circ K \to D\]
+Kan 扩张还有另一种解读. 不妨认为函子 $K$ 把范畴 $\cat{I}$ 嵌进了 $\cat{A}$ 里面. 最简单的情形是
+$\cat{I}$ 本来就是 $\cat{A}$ 的一个子范畴. 我们有一个把 $\cat{I}$ 映到 $\cat{C}$ 的函子 $D$. 我们
+能不能把 $D$ 扩张成一个在整个 $\cat{A}$ 上都有定义的函子 $F$? 最理想的情况是, 这样的扩张能让
+$F \circ K$ 与 $D$ 同构. 换句话说, $F$ 把 $D$ 的定义域扩张到了 $\cat{A}$. 但要一个完整的同构通常
+要求太高, 我们只要它的一半就够了, 也就是一个单向的自然变换 $\varepsilon$, 从 $F \circ K$ 到 $D$.
+(左 Kan 扩张挑的是另一个方向.)
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan6.jpg}
+\end{figure}
+
+\noindent
+当然, 一旦函子 $K$ 在物件上不是单射的, 或者在 hom-集合上不是忠实的, 这幅嵌入的图景就会失效 —— 极
+限那个例子正是如此. 那种情形下, Kan 扩张会尽它所能地把丢掉的信息外推出来.
+
+\section{作为伴随的 Kan 扩张}
+
+现在假设对任何 $D$ (以及固定的 $K$), 右 Kan 扩张都存在. 这种情况下, $\Ran_{K}-$ (那条横线顶替的是
+$D$) 就是一个从函子范畴 ${[}\cat{I}, \cat{C}{]}$ 到函子范畴 ${[}\cat{A}, \cat{C}{]}$ 的函子. 结果表
+明, 这个函子正是前复合函子 $- \circ K$ 的右伴随. 后者把 ${[}\cat{A}, \cat{C}{]}$ 里的函子映到
+${[}\cat{I}, \cat{C}{]}$ 里的函子. 这个伴随是:
+\[[\cat{I}, \cat{C}](F' \circ K, D) \cong [\cat{A}, \cat{C}](F', \Ran_{K}D)\]
+它不过是把下面这件事换个说法: 我们称为 $\varepsilon'$ 的每一个自然变换, 都对应着我们称为 $\sigma$ 的
+唯一一个自然变换.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan92.jpg}
+\end{figure}
+
+\noindent
+进一步说, 若我们把范畴 $\cat{I}$ 取得与 $\cat{C}$ 相同, 就可以把恒等函子 $I_{\cat{C}}$ 代入 $D$ 的
+位置. 于是得到如下恒等式:
+\[[\cat{C}, \cat{C}](F' \circ K, I_{\cat{C}}) \cong [\cat{A}, \cat{C}](F', \Ran_{K}I_{\cat{C}})\]
+现在我们可以把 $F'$ 也取成 $\Ran_{K}I_{\cat{C}}$. 这时右边含有恒等自然变换, 而与它对应的左边, 就给
+我们送来下面这个自然变换:
+\[\varepsilon \Colon \Ran_{K}I_{\cat{C}} \circ K \to I_{\cat{C}}\]
+这看起来非常像伴随的余单位:
+\[\Ran_{K}I_{\cat{C}} \dashv K\]
+的确, 恒等函子沿函子 $K$ 的右 Kan 扩张, 可以用来算出 $K$ 的左伴随. 为此还需要一个条件: 右 Kan 扩张
+必须被函子 $K$ 保持. 所谓扩张被保持, 意思是: 如果我们对一个先与 $K$ 前复合过的函子去算 Kan 扩张,
+结果应当与把原来的 Kan 扩张再与 $K$ 前复合相同. 在我们这个例子里, 这个条件简化成:
+\[K \circ \Ran_{K}I_{\cat{C}} \cong \Ran_{K}K\]
+注意, 用除以 $K$ 的记法, 这个伴随可以写成:
+\[I/K \dashv K\]
+这印证了我们那个直觉: 伴随描述的正是某种逆. 而保持条件则变成:
+\[K \circ I/K \cong K/K\]
+一个函子沿它自身的右 Kan 扩张 $K/K$, 叫作余密度单子 (codensity monad).
+
+伴随公式是一个重要的结果, 因为我们马上会看到, 可以用端 (和余端) 来计算 Kan 扩张, 这就给了我们一套实
+用地求出右伴随 (以及左伴随) 的手段.
+
+\section{左 Kan 扩张}
+
+有一个对偶的构造, 它给出左 Kan 扩张. 为了建立一点直觉, 我们可以从余极限的定义出发, 把它改写成用单物
+件范畴 $\cat{1}$ 的形式. 我们构造一个余锥: 用函子 $D \Colon \cat{I} \to \cat{C}$ 组成它的底, 用函子
+$F \Colon \cat{1} \to \cat{C}$ 选出它的顶点.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan81.jpg}
+\end{figure}
+
+\noindent
+余锥的那些侧面, 也就是那些入射, 是一个自然变换 $\eta$ 的分量, 这个自然变换从 $D$ 走向 $F \circ K$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan10a.jpg}
+\end{figure}
+
+\noindent
+余极限就是普遍余锥. 所以对任何别的函子 $F'$ 和任何别的自然变换
+\[\eta' \Colon D \to F' \circ K\]
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan10b.jpg}
+\end{figure}
+
+\noindent
+都存在唯一的自然变换 $\sigma$, 从 $F$ 到 $F'$
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan14.jpg}
+\end{figure}
+
+\noindent
+使得:
+\[\eta' = (\sigma \circ K)\ .\ \eta\]
+下面这张图式把它画了出来:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan112.jpg}
+\end{figure}
+
+\noindent
+把单物件范畴 $\cat{1}$ 换成 $\cat{A}$, 这个定义就自然而然地推广成了左 Kan 扩张的定义, 记作
+$\Lan_{K}D$.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan12.jpg}
+\end{figure}
+
+\noindent
+这个自然变换:
+\[\eta \Colon D \to \Lan_{K}D \circ K\]
+叫作左 Kan 扩张的单位.
+
+和先前一样, 我们能把自然变换之间的一一对应重写成伴随的形式:
+\[\eta' = (\sigma \circ K)\ .\ \eta\]
+也就是说:
+\[[\cat{A}, \cat{C}](\Lan_{K}D, F') \cong [\cat{I}, \cat{C}](D, F' \circ K)\]
+换句话说, 左 Kan 扩张是左伴随, 右 Kan 扩张是右伴随 —— 二者都是与 $K$ 前复合这件事的伴随.
+
+就像恒等函子的右 Kan 扩张可以用来算 $K$ 的左伴随一样, 恒等函子的左 Kan 扩张结果正是 $K$ 的右伴随
+(其中 $\eta$ 就是这个伴随的单位):
+\[K \dashv \Lan_{K}I_{\cat{C}}\]
+把这两个结果合起来, 我们得到:
+\[\Ran_{K}I_{\cat{C}} \dashv K \dashv \Lan_{K}I_{\cat{C}}\]
+
+\section{作为端的 Kan 扩张}
+
+Kan 扩张真正的威力来自一件事: 它能用端 (和余端) 算出来. 为了简单, 我们把注意力限制在
+目标范畴 $\cat{C}$ 就是 $\Set$ 的情形, 但这些公式可以推广到任何范畴.
+
+让我们重回这个想法: Kan 扩张能把函子的作用范围扩张到它原来的定义域之外. 假设 $K$ 把
+$\cat{I}$ 嵌进 $\cat{A}$. 函子 $D$ 把 $\cat{I}$ 映到 $\Set$. 我们不妨直接说: 对 $K$ 的像里的任何物件
+$a$, 也就是 $a = K\ i$, 扩张后的函子把 $a$ 映到 $D\ i$. 问题在于, $\cat{A}$ 里那些落在 $K$ 的像之外
+的物件该怎么办? 思路是: 每一个这样的物件, 都可能通过大量态射连到 $K$ 的像里的每个物件上, 而一个函子
+必须保持这些态射. 从物件 $a$ 走向 $K$ 的像的所有态射的全体, 由 Hom-函子刻画:
+\[\cat{A}(a, K\ -)\]
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\textwidth]{images/kan13.jpg}
+\end{figure}
+
+\noindent
+注意, 这个 Hom-函子是两个函子复合出来的:
+\[\cat{A}(a, K\ -) = \cat{A}(a, -) \circ K\]
+右 Kan 扩张就是函子复合的右伴随:
+\[[\cat{I}, \Set](F' \circ K, D) \cong [\cat{A}, \Set](F', \Ran_{K}D)\]
+让我们看看, 把 $F'$ 换成 Hom-函子会发生什么:
+\[[\cat{I}, \Set](\cat{A}(a, -) \circ K, D) \cong [\cat{A}, \Set](\cat{A}(a, -), \Ran_{K}D)\]
+再把复合就地展开:
+\[[\cat{I}, \Set](\cat{A}(a, K\ -), D) \cong [\cat{A}, \Set](\cat{A}(a, -), \Ran_{K}D)\]
+右边可以用米田引理化简:
+\[[\cat{I}, \Set](\cat{A}(a, K\ -), D) \cong \Ran_{K}D\ a\]
+现在我们可以把自然变换的集合改写成一个端, 于是得到右 Kan 扩张这个非常好用的公式:
+\[\Ran_{K}D\ a \cong \int_i \Set(\cat{A}(a, K\ i), D\ i)\]
+左 Kan 扩张也有一个类似的公式, 只不过用的是余端:
+\[\Lan_{K}D\ a = \int^i \cat{A}(K\ i, a)\times{}D\ i\]
+要看出确实如此, 我们来证明它确实是函子复合的左伴随:
+\[[\cat{A}, \Set](\Lan_{K}D, F') \cong [\cat{I}, \Set](D, F' \circ K)\]
+把我们的公式代进左边:
+\[[\cat{A}, \Set](\int^i \cat{A}(K\ i, -)\times{}D\ i, F')\]
+这是一个自然变换的集合, 所以它可以改写成一个端:
+\[\int_a \Set(\int^i \cat{A}(K\ i, a)\times{}D\ i, F'\ a)\]
+利用 Hom-函子的连续性, 我们可以把余端换成端:
+\[\int_a \int_i \Set(\cat{A}(K\ i, a)\times{}D\ i, F'\ a)\]
+我们可以用积-指数伴随:
+\[\int_a \int_i \Set(\cat{A}(K\ i, a),\ (F'\ a)^{D\ i})\]
+指数同构于相应的 hom-集合:
+\[\int_a \int_i \Set(\cat{A}(K\ i, a),\ \cat{A}(D\ i, F'\ a))\]
+有一条定理叫富比尼定理 (Fubini theorem), 它允许我们把两个端交换次序:
+\[\int_i \int_a \Set(\cat{A}(K\ i, a),\ A(D\ i, F'\ a))\]
+里面那个端表示两个函子之间自然变换的集合, 于是我们可以再次动用米田引理:
+\[\int_i \cat{A}(D\ i, F'\ (K\ i))\]
+这确实就是我们着手证明的那个伴随的右边 —— 那个自然变换的集合:
+\[[\cat{I}, \Set](D, F' \circ K)\]
+这类用端、余端和米田引理做出的推算, 在端的 ``微积分'' 里相当典型.
+
+\section{Haskell 里的 Kan 扩张}
+
+Kan 扩张的端/余端公式可以很轻松地翻译成 Haskell. 先从右扩张开始:
+\[\Ran_{K}D\ a \cong \int_i \Set(\cat{A}(a, K\ i), D\ i)\]
+我们把端换成全称量词, 把 hom-集合换成函数类型:
+
+\src{snippet01}
+看一眼这个定义就清楚, \code{Ran} 里必然装着一个 \code{a} 类型的值, 函数可以作用在它身上; 还装着
+\code{k} 与 \code{d} 这两个函子之间的一个自然变换. 比方说, 假设 \code{k} 是树函子, \code{d} 是列表
+函子, 而你手上有一个 \code{Ran Tree {[}{]} String}. 如果你递给它一个函数:
+
+\src{snippet02}
+你就会拿回一个 \code{Int} 的列表, 如此等等. 右 Kan 扩张会用你的这个函数生成一棵树,
+再把它重新打包成一个列表. 比如, 你可以递给它一个从字符串生成解析树的解析器,
+于是你会得到一个列表, 它对应于这棵树的深度优先遍历.
+
+右 Kan 扩张可以用来算出给定函子的左伴随, 只要把函子 \code{d} 换成恒等函子. 这样一来, 函子 \code{k}
+的左伴随就由下面这个类型的多态函数的集合表示:
+
+\src{snippet03}
+假设 \code{k} 是从幺半群范畴出发的遗忘函子. 这时全称量词遍历的是所有幺半群. 当然, 在 Haskell 里我们无
+法表达幺半群定律, 但下面这个算是对所得自由函子的一个不错的近似 (遗忘函子 \code{k} 在物件上是恒等的):
+
+\src{snippet04}
+不出所料, 它生成的是自由幺半群, 也就是 Haskell 的列表:
+
+\src{snippet05}
+左 Kan 扩张是一个余端:
+\[\Lan_{K}D\ a = \int^i \cat{A}(K\ i, a)\times{}D\ i\]
+所以它翻译成一个存在量词. 符号化地写:
+
+\begin{snip}{haskell}
+Lan k d a = exists i. (k i -> a, d i)
+\end{snip}
+这可以用 \acronym{GADT}s 编码进 Haskell, 也可以用一个全称量化的数据构造子:
+
+\src{snippet06}
+对这个数据结构的解读是: 它含有一个函数, 这个函数接受某个由未指明的 \code{i} 组成的容器, 产出一个
+\code{a}. 它还含有一个由这些 \code{i} 组成的容器. 由于你完全不知道 \code{i} 是什么, 你对这个数据结
+构唯一能做的事, 就是把 \code{i} 的容器取出来, 用一个自然变换按函子 \code{k} 重新打包, 然后调用那个函
+数拿到 \code{a}. 例如, 若 \code{d} 是树, \code{k} 是列表, 你就可以把树序列化, 用得到的列表去调用那个
+函数, 从而得到一个 \code{a}.
+
+左 Kan 扩张可以用来算出一个函子的右伴随. 我们知道积函子的右伴随是指数, 那就试着用 Kan 扩张来实现它:
+
+\src{snippet07}
+它确实与函数类型同构, 下面这一对函数就是见证:
+
+\src{snippet08}
+注意, 与前面一般情形的描述一致, 我们做了下面这几步:
+
+\begin{enumerate}
+  \tightlist
+  \item
+        取出 \code{x} 的容器 (在这里它就是一个平凡的恒等容器), 以及函数 \code{f}.
+  \item
+        用恒等函子与序对函子之间的自然变换, 把容器重新打包.
+  \item
+        调用函数 \code{f}.
+\end{enumerate}
+
+\section{自由函子}
+
+Kan 扩张的一个有意思的应用, 是自由函子的构造. 它解决的是下面这个实际问题: 假设你有一个类型
+构造子 --- 也就是一个物件之间的映射. 能不能基于这个类型构造子定义出一个函子? 换句话说, 能不能定义
+一个态射之间的映射, 把这个类型构造子扩张成一个完整意义上的自函子?
+
+关键的观察是: 一个类型构造子可以被描述成一个定义域为离散范畴的函子. 离散范畴除了恒等态射之外
+没有别的态射. 给定一个范畴 $\cat{C}$, 我们总能构造出一个离散范畴 $\cat{|C|}$, 办法就是把所有非恒等
+态射统统丢掉. 这样一个从 $\cat{|C|}$ 到 $\cat{C}$ 的函子 $F$, 就只是一个简单的物件映射, 也就是我们
+在 Haskell 里所说的类型构造子. 另外还有一个典范函子 $J$, 它把 $\cat{|C|}$ 单射地嵌入 $\cat{C}$: 它
+在物件上 (以及在恒等态射上) 是恒等的. $F$ 沿 $J$ 的左 Kan 扩张, 如果它存在, 就是一个从 $\cat{C}$
+到 $\cat{C}$ 的函子:
+\[\Lan_{J}F\ a = \int^i \cat{C}(J\ i, a)\times{}F\ i\]
+它叫作基于 $F$ 的自由函子.
+
+在 Haskell 里, 我们会这样写:
+
+\src{snippet09}
+的确, 对任何类型构造子 \code{f}, \code{FreeF f} 都是一个函子:
+
+\src{snippet10}
+如你所见, 这个自由函子靠同时记下函数和它的参数, 假装完成了对函数的提升. 它靠记下被提升函数之间的
+复合, 把这些提升累积起来. 函子规则自动满足. 这个构造在一篇论文里被用到过:
+\urlref{http://okmij.org/ftp/Haskell/extensible/more.pdf}{Freer Monads,
+  More Extensible Effects}.
+
+或者, 我们也可以用右 Kan 扩张达到同样的目的:
+
+\src{snippet11}
+很容易验证这确实是一个函子:
+
+\src{snippet12}
